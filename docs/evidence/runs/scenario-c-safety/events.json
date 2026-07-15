@@ -1,0 +1,67 @@
+[
+  {
+    "detail": "Command requires explicit human approval.",
+    "event_type": "policy",
+    "outcome": "requires_approval"
+  },
+  {
+    "detail": "Command requires explicit human approval.",
+    "event_type": "policy",
+    "outcome": "requires_approval"
+  },
+  {
+    "detail": "Path is denied by the configured write policy.",
+    "event_type": "policy",
+    "outcome": "denied"
+  },
+  {
+    "detail": "The same normalized command error occurred repeatedly.",
+    "event_type": "loop.no_progress",
+    "outcome": "replan"
+  },
+  {
+    "detail": "received -> planning",
+    "event_type": "plan_created",
+    "outcome": "planning"
+  },
+  {
+    "detail": "planning -> exploring",
+    "event_type": "execution_started",
+    "outcome": "exploring"
+  },
+  {
+    "detail": "exploring -> researching",
+    "event_type": "agent_completed",
+    "outcome": "researching"
+  },
+  {
+    "detail": "researching -> implementing",
+    "event_type": "agent_completed",
+    "outcome": "implementing"
+  },
+  {
+    "detail": "implementing -> testing",
+    "event_type": "agent_completed",
+    "outcome": "testing"
+  },
+  {
+    "detail": "testing -> replanning",
+    "event_type": "validation_failed",
+    "outcome": "replanning"
+  },
+  {
+    "detail": "replanning -> implementing",
+    "event_type": "replan_completed",
+    "outcome": "implementing"
+  },
+  {
+    "detail": "implementing -> testing",
+    "event_type": "agent_completed",
+    "outcome": "testing"
+  },
+  {
+    "detail": "testing -> blocked",
+    "event_type": "replan_budget_exhausted",
+    "outcome": "blocked"
+  }
+]

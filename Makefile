@@ -1,0 +1,49 @@
+PYTHON ?= python3
+VENV ?= .venv
+PYTHON_BIN := $(VENV)/bin/python
+CLI := $(VENV)/bin/coding-agent
+
+.PHONY: bootstrap test coverage lint typecheck check build config rag-ingest demo \
+	docker-build docker-dev docker-check
+
+bootstrap: $(PYTHON_BIN)
+	$(PYTHON_BIN) -m pip install -e ".[dev]"
+
+$(PYTHON_BIN):
+	$(PYTHON) -m venv $(VENV)
+
+test:
+	$(PYTHON_BIN) -m pytest -q
+
+coverage:
+	$(PYTHON_BIN) -m pytest --cov=coding_agent --cov-branch --cov-report=term-missing -q
+
+lint:
+	$(VENV)/bin/ruff check src tests examples
+
+typecheck:
+	$(VENV)/bin/mypy src tests
+
+check: test lint typecheck
+
+build:
+	$(PYTHON_BIN) -m build
+
+config:
+	$(CLI) config validate --config agent.config.yaml
+
+rag-ingest:
+	$(CLI) rag ingest ./rag_sources --config agent.config.yaml --fake-embeddings
+
+demo:
+	$(CLI) demo all --runtime-root tmp/demo-runtime --output-root docs/evidence/runs
+
+docker-build:
+	docker build --target runtime --tag coding-agent-advanced:local .
+
+docker-dev:
+	docker compose --profile dev run --rm dev
+
+docker-check:
+	docker compose --profile dev run --rm dev /bin/sh -c \
+		"python -m pytest -q && ruff check src tests examples && mypy src tests"

@@ -1,0 +1,6 @@
+[
+  "FastAPI app uses app/main.py, routers, services, schemas and core configuration.",
+  "Routers stay thin and delegate to services; services construct response schemas.",
+  "Run python -m pytest -q for the installed FastAPI project.",
+  "app/main.py is the application factory and router composition root."
+]

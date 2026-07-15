@@ -1,0 +1,40 @@
+--- a/app/routers/meta.py
++++ b/app/routers/meta.py
+@@ -1,7 +1,7 @@
+ from fastapi import APIRouter
+ 
+ from app.schemas.meta import VersionResponse
+-from app.services.version import get_service_info
++from app.services.version import get_service_info, get_version
+ 
+ router = APIRouter(tags=["metadata"])
+ 
+@@ -10,3 +10,7 @@
+ def service_info() -> VersionResponse:
+     return get_service_info()
+ 
++
++@router.get("/version", response_model=VersionResponse)
++def version() -> VersionResponse:
++    return get_version()
+--- a/app/services/version.py
++++ b/app/services/version.py
+@@ -5,3 +5,6 @@
+ def get_service_info() -> VersionResponse:
+     return VersionResponse(name=APP_NAME, version=APP_VERSION)
+ 
++
++def get_version() -> VersionResponse:
++    return VersionResponse(name=APP_NAME, version=APP_VERSION)
+--- a/tests/test_meta.py
++++ b/tests/test_meta.py
+@@ -7,3 +7,9 @@
+     assert response.status_code == 200
+     assert response.json()["version"] == "0.1.0"
+ 
++
++def test_version(client: TestClient) -> None:
++    response = client.get("/version")
++
++    assert response.status_code == 200
++    assert response.json() == {"name": "inventory-api", "version": "0.1.0"}

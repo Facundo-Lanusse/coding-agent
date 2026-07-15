@@ -1,0 +1,26 @@
+[
+  {
+    "excerpt": "Routers delegate to services; services construct typed responses.",
+    "locator": "README.md:Architecture",
+    "reference": "README.md",
+    "source": "repository"
+  },
+  {
+    "excerpt": "# pytest fixtures\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n estable enlazada en el manifest.\n\n## Contexto expl\u00edcito para tests\n\nUna fixture proporciona contexto confiable y repetible para un test. Se define\ncon `@pytest.fixture` y se solicita declarando su nombre como argumento del test\no de otra fixture.\n\n```python\nimport pytest\n\n@pytest.fixture\ndef sample_items() -> list[str]:\n    return [\"one\", \"two\"]\n\ndef test_items(sample_items: list[str]) -> None:\n    assert len(sample_items) == 2\n```\n\n",
+    "locator": "pytest - Fixtures > pytest fixtures > Alcance y limpieza > chunk 0",
+    "reference": "https://docs.pytest.org/en/stable/how-to/fixtures.html",
+    "source": "rag"
+  },
+  {
+    "excerpt": "# FastAPI dependencies\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n oficial enlazada en el manifest.\n\n## Declaraci\u00f3n con Depends\n\nUna dependencia de FastAPI es un callable. La operaci\u00f3n declara que depende de\nese callable usando `Depends`; FastAPI lo ejecuta y entrega su resultado al\npar\u00e1metro correspondiente. Para Python moderno, la documentaci\u00f3n recomienda\nconservar la anotaci\u00f3n de tipo mediante `Annotated`.\n\n```python\nfrom typing import Annotated\n\nfrom fastapi import Depends, FastAPI\n\napp = F",
+    "locator": "FastAPI - Dependencies > FastAPI dependencies > Composici\u00f3n > chunk 0",
+    "reference": "https://fastapi.tiangolo.com/tutorial/dependencies/",
+    "source": "rag"
+  },
+  {
+    "excerpt": "# Pydantic models\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n oficial enlazada en el manifest.\n\n## Validaci\u00f3n\n\nUn modelo hereda de `BaseModel` y declara campos mediante anotaciones. Pydantic\nvalida los datos de entrada y construye una instancia que respeta los tipos y\nrestricciones declarados.\n\n```python\nfrom pydantic import BaseModel, Field\n\nclass User(BaseModel):\n    name: str\n    age: int = Field(ge=0)\n```\n\n## Serializaci\u00f3n y configuraci\u00f3n\n\n`model_dump()` produce datos Python y `model_dump_j",
+    "locator": "Pydantic - Models > Pydantic models > Serializaci\u00f3n y configuraci\u00f3n > chunk 0",
+    "reference": "https://pydantic.dev/docs/validation/latest/concepts/models/",
+    "source": "rag"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "excerpt": "Routers delegate to services; services construct typed responses.",
+    "locator": "README.md:Architecture",
+    "reference": "README.md",
+    "source": "repository"
+  },
+  {
+    "excerpt": "FastAPI app uses app/main.py, routers, services, schemas and core configuration.",
+    "locator": null,
+    "reference": "README.md#Architecture",
+    "source": "memory"
+  },
+  {
+    "excerpt": "Routers stay thin and delegate to services; services construct response schemas.",
+    "locator": null,
+    "reference": "README.md#Convention",
+    "source": "memory"
+  },
+  {
+    "excerpt": "Run python -m pytest -q for the installed FastAPI project.",
+    "locator": null,
+    "reference": "README.md#Commands",
+    "source": "memory"
+  },
+  {
+    "excerpt": "app/main.py is the application factory and router composition root.",
+    "locator": null,
+    "reference": "app/main.py",
+    "source": "memory"
+  }
+]

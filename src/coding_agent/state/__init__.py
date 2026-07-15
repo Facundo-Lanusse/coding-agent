@@ -1,0 +1,47 @@
+"""Shared task state and explicit transition machine."""
+
+from coding_agent.state.machine import ALLOWED_TRANSITIONS, InvalidTransitionError, TaskStateMachine
+from coding_agent.state.models import (
+    AgentName,
+    AgentResult,
+    AgentResultStatus,
+    ApprovalRecord,
+    CheckResult,
+    Decision,
+    Evidence,
+    EvidenceGroup,
+    EvidenceSource,
+    FileChange,
+    FileOperation,
+    PendingApproval,
+    TaskEvent,
+    TaskFinalResult,
+    TaskRequest,
+    TaskState,
+    TaskStatus,
+    ToolInvocationRecord,
+)
+
+__all__ = [
+    "ALLOWED_TRANSITIONS",
+    "AgentName",
+    "AgentResult",
+    "AgentResultStatus",
+    "ApprovalRecord",
+    "CheckResult",
+    "Decision",
+    "Evidence",
+    "EvidenceGroup",
+    "EvidenceSource",
+    "FileChange",
+    "FileOperation",
+    "InvalidTransitionError",
+    "PendingApproval",
+    "TaskEvent",
+    "TaskFinalResult",
+    "TaskRequest",
+    "TaskState",
+    "TaskStateMachine",
+    "TaskStatus",
+    "ToolInvocationRecord",
+]

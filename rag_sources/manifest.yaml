@@ -1,0 +1,28 @@
+sources:
+  - path: fastapi_dependencies.md
+    source_id: fastapi-official-dependencies
+    source_type: official_url
+    path_or_url: https://fastapi.tiangolo.com/tutorial/dependencies/
+    title: FastAPI - Dependencies
+    ecosystem: FastAPI
+    version: latest snapshot 2026-07-14
+    content_type: text/markdown; profile=paraphrased-official-docs
+    retrieved_at: "2026-07-14"
+  - path: pydantic_models.md
+    source_id: pydantic-official-models
+    source_type: official_url
+    path_or_url: https://pydantic.dev/docs/validation/latest/concepts/models/
+    title: Pydantic - Models
+    ecosystem: Pydantic
+    version: latest snapshot 2026-07-14
+    content_type: text/markdown; profile=paraphrased-official-docs
+    retrieved_at: "2026-07-14"
+  - path: pytest_fixtures.md
+    source_id: pytest-official-fixtures
+    source_type: official_url
+    path_or_url: https://docs.pytest.org/en/stable/how-to/fixtures.html
+    title: pytest - Fixtures
+    ecosystem: pytest
+    version: stable snapshot 2026-07-14
+    content_type: text/markdown; profile=paraphrased-official-docs
+    retrieved_at: "2026-07-14"

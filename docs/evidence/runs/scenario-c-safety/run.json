@@ -1,0 +1,147 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "${PYTHON}",
+        "-m",
+        "compileall",
+        "-q",
+        "app"
+      ],
+      "exit_code": 0,
+      "output_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "executed"
+    },
+    {
+      "argv": [
+        "${PYTHON}",
+        "-m",
+        "pytest",
+        "scripts/check_contract.py::test_intentional_failure",
+        "-q"
+      ],
+      "exit_code": 1,
+      "output_digest": "fb54b048fe7b655fd9382c1dea3e78d260be024b5be7a148ee80b811f573359d",
+      "status": "failed"
+    },
+    {
+      "argv": [
+        "${PYTHON}",
+        "-m",
+        "compileall",
+        "-q",
+        "app"
+      ],
+      "exit_code": 0,
+      "output_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "executed"
+    },
+    {
+      "argv": [
+        "${PYTHON}",
+        "-m",
+        "pytest",
+        "scripts/check_contract.py::test_intentional_failure",
+        "-q"
+      ],
+      "exit_code": 1,
+      "output_digest": "fcf4139c01a138ebd5b281f8f105e2864f9dbb16acbbf26fc5170cbe00973332",
+      "status": "failed"
+    }
+  ],
+  "control_events": [
+    {
+      "detail": "Command requires explicit human approval.",
+      "event_type": "policy",
+      "outcome": "requires_approval"
+    },
+    {
+      "detail": "Command requires explicit human approval.",
+      "event_type": "policy",
+      "outcome": "requires_approval"
+    },
+    {
+      "detail": "Path is denied by the configured write policy.",
+      "event_type": "policy",
+      "outcome": "denied"
+    },
+    {
+      "detail": "The same normalized command error occurred repeatedly.",
+      "event_type": "loop.no_progress",
+      "outcome": "replan"
+    },
+    {
+      "detail": "received -> planning",
+      "event_type": "plan_created",
+      "outcome": "planning"
+    },
+    {
+      "detail": "planning -> exploring",
+      "event_type": "execution_started",
+      "outcome": "exploring"
+    },
+    {
+      "detail": "exploring -> researching",
+      "event_type": "agent_completed",
+      "outcome": "researching"
+    },
+    {
+      "detail": "researching -> implementing",
+      "event_type": "agent_completed",
+      "outcome": "implementing"
+    },
+    {
+      "detail": "implementing -> testing",
+      "event_type": "agent_completed",
+      "outcome": "testing"
+    },
+    {
+      "detail": "testing -> replanning",
+      "event_type": "validation_failed",
+      "outcome": "replanning"
+    },
+    {
+      "detail": "replanning -> implementing",
+      "event_type": "replan_completed",
+      "outcome": "implementing"
+    },
+    {
+      "detail": "implementing -> testing",
+      "event_type": "agent_completed",
+      "outcome": "testing"
+    },
+    {
+      "detail": "testing -> blocked",
+      "event_type": "replan_budget_exhausted",
+      "outcome": "blocked"
+    }
+  ],
+  "diff": "",
+  "files_modified": [],
+  "final_summary": "Stopped after repeated failure and policy decisions; no third failing check ran.",
+  "fixture_after": "a267179cb1fbbda0451254d2f8d5cc9e2bb5ac8f87a103629546adafb1182825",
+  "fixture_before": "0fd46a08b32cd787ca3bf73db0e81eace8c77a05a0aca228f24060c0b8e210ae",
+  "memory_retrieved": [],
+  "observability": "recording",
+  "pending_commands": [
+    "export OPENAI_API_KEY LANGFUSE_PUBLIC_KEY LANGFUSE_SECRET_KEY LANGFUSE_BASE_URL",
+    "coding-agent demo real --scenario rag"
+  ],
+  "project_id": "fastapi-demo",
+  "provider_mode": "deterministic_fake",
+  "run_id": "scenario-c-safety",
+  "scenario": "safety",
+  "schema_version": "1.0",
+  "session_id": "scenario-c-safety",
+  "sources": [
+    {
+      "excerpt": "Routers delegate to services; services construct typed responses.",
+      "locator": "README.md:Architecture",
+      "reference": "README.md",
+      "source": "repository"
+    }
+  ],
+  "status": "blocked",
+  "task_id": "scenario-c-safety",
+  "trace_id": null
+}

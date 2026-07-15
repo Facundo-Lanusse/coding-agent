@@ -1,0 +1,26 @@
+[
+  {
+    "argv": [
+      "${PYTHON}",
+      "-m",
+      "compileall",
+      "-q",
+      "app"
+    ],
+    "exit_code": 0,
+    "output_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": "executed"
+  },
+  {
+    "argv": [
+      "${PYTHON}",
+      "-m",
+      "pytest",
+      "scripts/check_contract.py::test_ready_contract",
+      "-q"
+    ],
+    "exit_code": 0,
+    "output_digest": "4bcefcc9f6c645923b9993ccf73ad92e6b400ca25458ea14e095857fc2131342",
+    "status": "executed"
+  }
+]

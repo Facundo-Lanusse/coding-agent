@@ -1,0 +1,55 @@
+# Entornos locales
+.venv/
+venv/
+env/
+
+# Python y tooling
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Build y packaging (publicar dist/ como GitHub Release, no versionarlo)
+dist/
+build/
+site/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Configuración local y secretos
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+
+# Estado generado por memoria, RAG y demos
+data/
+tmp/
+artifacts/runtime/
+*.sqlite
+*.sqlite3
+*.db
+*.log
+
+# Los bundles requeridos del TP bajo docs/evidence/runs sí se versionan.
+
+# Editores y sistema operativo
+.idea/
+.vscode/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,37 @@
+[
+  {
+    "detail": "received -> planning",
+    "event_type": "plan_created",
+    "outcome": "planning"
+  },
+  {
+    "detail": "planning -> exploring",
+    "event_type": "execution_started",
+    "outcome": "exploring"
+  },
+  {
+    "detail": "exploring -> researching",
+    "event_type": "agent_completed",
+    "outcome": "researching"
+  },
+  {
+    "detail": "researching -> implementing",
+    "event_type": "agent_completed",
+    "outcome": "implementing"
+  },
+  {
+    "detail": "implementing -> testing",
+    "event_type": "agent_completed",
+    "outcome": "testing"
+  },
+  {
+    "detail": "testing -> reviewing",
+    "event_type": "agent_completed",
+    "outcome": "reviewing"
+  },
+  {
+    "detail": "reviewing -> completed",
+    "event_type": "task_completed",
+    "outcome": "completed"
+  }
+]

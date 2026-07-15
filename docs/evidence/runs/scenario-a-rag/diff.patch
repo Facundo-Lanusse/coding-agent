@@ -1,0 +1,43 @@
+--- a/app/routers/health.py
++++ b/app/routers/health.py
+@@ -1,7 +1,7 @@
+ from fastapi import APIRouter
+ 
+ from app.schemas.health import HealthResponse
+-from app.services.health import get_liveness
++from app.services.health import get_liveness, get_readiness
+ 
+ router = APIRouter(prefix="/health", tags=["health"])
+ 
+@@ -10,3 +10,7 @@
+ def liveness() -> HealthResponse:
+     return get_liveness()
+ 
++
++@router.get("/ready", response_model=HealthResponse)
++def readiness() -> HealthResponse:
++    return get_readiness()
+--- a/app/services/health.py
++++ b/app/services/health.py
+@@ -4,3 +4,6 @@
+ def get_liveness() -> HealthResponse:
+     return HealthResponse(status="ok", checks={"process": "up"})
+ 
++
++def get_readiness() -> HealthResponse:
++    return HealthResponse(status="ready", checks={"dependencies": "ready"})
+--- a/tests/test_health.py
++++ b/tests/test_health.py
+@@ -7,3 +7,12 @@
+     assert response.status_code == 200
+     assert response.json()["status"] == "ok"
+ 
++
++def test_readiness(client: TestClient) -> None:
++    response = client.get("/health/ready")
++
++    assert response.status_code == 200
++    assert response.json() == {
++        "status": "ready",
++        "checks": {"dependencies": "ready"},
++    }

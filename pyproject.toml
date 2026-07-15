@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coding-agent-advanced"
+version = "0.1.0"
+description = "Explicitly orchestrated coding agent for Python and FastAPI repositories"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "TP Final Inteligencia Artificial" }]
+dependencies = [
+  "openai>=2.45,<3",
+  "pydantic>=2.13,<3",
+  "pydantic-settings>=2.14,<3",
+  "PyYAML>=6.0.3,<7",
+  "typer>=0.26,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.5,<2",
+  "mypy>=2.3,<3",
+  "pytest>=9.1,<10",
+  "pytest-cov>=7.1,<8",
+  "ruff>=0.15,<1",
+  "types-PyYAML>=6.0.12.20260518",
+]
+
+[project.scripts]
+coding-agent = "coding_agent.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+  "langfuse_integration: requires Langfuse credentials, SDK, and network access",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["coding_agent"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
+
+[tool.mypy]
+files = ["src", "tests"]
+mypy_path = "src"
+python_version = "3.11"
+strict = true
+warn_unreachable = true

@@ -1,0 +1,58 @@
+workspace: .
+
+llm:
+  provider: openai
+  model: deterministic-demo
+  max_output_tokens: 1000
+  store_responses: false
+
+permissions:
+  read:
+    deny: [".env", ".env.*", "**/*.pem", "**/*.key", "secrets/**", ".git/**"]
+  write:
+    deny: [".env", ".env.*", ".git/**", ".github/**", "**/*.lock", "secrets/**"]
+
+commands:
+  deny: ["rm -rf", "git push", "git reset --hard", "sudo"]
+  require_approval: ["python -m pip install", "pip install", "git commit"]
+  allow_by_role:
+    explorer: ["ls", "find", "rg"]
+    researcher: []
+    implementer: []
+    tester: ["python -m pytest", "python -m compileall"]
+    reviewer: []
+
+execution:
+  timeout_seconds: 20
+  max_output_chars: 20000
+  max_read_bytes: 200000
+  max_list_entries: 500
+  max_agent_iterations: 10
+  max_identical_actions: 2
+  max_identical_failures: 2
+
+rag:
+  enabled: true
+  collection_name: demo-fastapi
+  collection_version: "2026-07-14"
+  persistence_path: ./data/vector_store
+  embedding_model: deterministic-fake-v1
+  embedding_dimension: 64
+  chunk_size_tokens: 300
+  chunk_overlap_tokens: 40
+  top_k: 4
+  minimum_relevance: 0.2
+  web_fallback: true
+  allowed_url_domains: ["fastapi.tiangolo.com", "docs.pydantic.dev", "docs.pytest.org"]
+
+memory:
+  enabled: true
+  database_path: ./data/memory.sqlite3
+
+observability:
+  provider: langfuse
+  enabled: false
+  redact_sensitive_data: true
+  capture_content: false
+  max_payload_chars: 10000
+

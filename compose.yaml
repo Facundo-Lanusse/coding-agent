@@ -1,0 +1,48 @@
+name: coding-agent-advanced
+
+x-agent-environment: &agent-environment
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.6-luna}
+  TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+  LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+  LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
+  LANGFUSE_BASE_URL: ${LANGFUSE_BASE_URL:-https://cloud.langfuse.com}
+
+x-agent-security: &agent-security
+  user: ${LOCAL_UID:-1000}:${LOCAL_GID:-1000}
+  init: true
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+
+services:
+  agent:
+    <<: *agent-security
+    image: coding-agent-advanced:local
+    build:
+      context: .
+      target: runtime
+    environment: *agent-environment
+    volumes:
+      - ./data:/workspace/data
+      - ./tmp:/workspace/tmp
+      - ./docs/evidence/runs:/workspace/docs/evidence/runs
+
+  dev:
+    <<: *agent-security
+    profiles:
+      - dev
+    image: coding-agent-advanced:dev
+    build:
+      context: .
+      target: development
+    environment: *agent-environment
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    stdin_open: true
+    tty: true

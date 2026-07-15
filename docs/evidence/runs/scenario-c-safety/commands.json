@@ -1,0 +1,50 @@
+[
+  {
+    "argv": [
+      "${PYTHON}",
+      "-m",
+      "compileall",
+      "-q",
+      "app"
+    ],
+    "exit_code": 0,
+    "output_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": "executed"
+  },
+  {
+    "argv": [
+      "${PYTHON}",
+      "-m",
+      "pytest",
+      "scripts/check_contract.py::test_intentional_failure",
+      "-q"
+    ],
+    "exit_code": 1,
+    "output_digest": "fb54b048fe7b655fd9382c1dea3e78d260be024b5be7a148ee80b811f573359d",
+    "status": "failed"
+  },
+  {
+    "argv": [
+      "${PYTHON}",
+      "-m",
+      "compileall",
+      "-q",
+      "app"
+    ],
+    "exit_code": 0,
+    "output_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": "executed"
+  },
+  {
+    "argv": [
+      "${PYTHON}",
+      "-m",
+      "pytest",
+      "scripts/check_contract.py::test_intentional_failure",
+      "-q"
+    ],
+    "exit_code": 1,
+    "output_digest": "fcf4139c01a138ebd5b281f8f105e2864f9dbb16acbbf26fc5170cbe00973332",
+    "status": "failed"
+  }
+]

@@ -1,0 +1,8 @@
+[
+  {
+    "excerpt": "Routers delegate to services; services construct typed responses.",
+    "locator": "README.md:Architecture",
+    "reference": "README.md",
+    "source": "repository"
+  }
+]
