@@ -23,8 +23,8 @@ Por defecto no usa OpenAI, web ni Langfuse, y no necesita leer `.env`.
 
 ### Integración opt-in
 
-`tests/integration/test_langfuse_integration.py` requiere variables Langfuse,
-SDK y red. Sin ellas se salta. Es un smoke de una observación, no una demo
+`tests/integration/test_langfuse_integration.py` requiere variables Langfuse y
+red. Sin ellas se salta. Es un smoke de una observación, no una demo
 multiagente completa.
 
 ### End-to-end deterministas
@@ -85,9 +85,45 @@ clean wheel install + coding-agent --help   -> exit 0
 coding-agent demo all                       -> exit 0
 ```
 
+Tras integrar los providers reales autorizados, el checkpoint local fue:
+
+```text
+pytest -q                                    -> 142 passed, 1 skipped
+ruff check src tests examples               -> exit 0
+mypy src tests                               -> exit 0, 101 source files
+coverage                                     -> 85% global, exit 0
+coding-agent demo real --scenario rag       -> exit 2 sin --confirm-cost;
+                                                cero llamadas externas
+```
+
+Después de los intentos reales se agregaron regresiones offline para el parsing
+recuperable de JSON, la devolución del error sin ejecutar la tool y la
+exposición exclusiva de `submit_agent_result` en el último turno. `make check`
+volvió a terminar con exit 0. El cuarto intento externo llegó a Tester; su
+`pytest -q` terminó 4 por ausencia de FastAPI en el entorno principal. El mismo
+workspace modificado terminó `3 passed`, exit 0, con el entorno aislado del
+demo. Los seis primeros intentos externos permanecen documentados como
+`blocked`/`failed`, no como tareas completas.
+
+El quinto intento recuperó memoria del cuarto y llegó a Researcher, que se
+bloqueó al usar como vigente un fallo histórico de Tester. La prueba
+`test_researcher_contract_does_not_require_downstream_tests` fija el contrato:
+evidencia repository actual prevalece y Researcher no exige implementación ni
+checks de roles posteriores.
+
+El séptimo intento `real-openai-20260716-231650` terminó `completed`, exit 0:
+Tester ejecutó `pytest -q` con `3 passed` y Reviewer aceptó. El trace id real es
+`8248244a2224f1dc099fff1240e5c040`. Las regresiones adicionales comprueban argv
+directo y sustitución del home local por `${HOME}` en artifacts/tracing.
+
+El comando real con `--confirm-cost` no pertenece a la suite automática: usa
+OpenAI, eventualmente Tavily y Langfuse, y debe ejecutarse manualmente con el
+entorno del usuario. Sus instrucciones están en
+[`demo_runbook.md`](demo_runbook.md).
+
 El coverage global supera el mínimo de 85%, pero no todos los módulos críticos
-alcanzan el 90% planificado: orquestación queda en 83% y los módulos de policy
-entre 62% y 89%. El skip corresponde a Langfuse sin SDK/credenciales y no se
+alcanzan el 90% planificado: orquestación queda en 85% y los módulos de policy
+entre 62% y 89%. El skip corresponde a Langfuse sin credenciales/red y no se
 contabiliza como prueba real de observabilidad. El detalle está en
 [`final_audit.md`](final_audit.md).
 

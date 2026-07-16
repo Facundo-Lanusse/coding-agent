@@ -13,10 +13,10 @@ anterior; antes de editar se declaran los archivos previstos. Cada fase termina
 con tests relevantes, Ruff, mypy, diff/resumen, comandos con exit code,
 actualización de este documento y de la matriz, y una detención explícita.
 
-Estados usados en este plan: `PENDING`, `IN_PROGRESS`, `BLOCKED`, `DONE`. Fase
-02 está `DONE`; Fase 01 conserva pendientes históricos de build/CLI y las Fases
-03 a 09 siguen `PENDING`. El avance a Fase 02 fue una instrucción explícita del
-usuario y no se usa para afirmar que esos checks históricos fueron ejecutados.
+Estados usados en este plan: `PENDING`, `IN_PROGRESS`, `BLOCKED`, `DONE`. Las
+Fases 01 a 09 están completadas; sus resultados históricos permanecen debajo.
+El checkpoint posterior a la auditoría agrega únicamente la composición real
+que había quedado pendiente y no reescribe resultados que no fueron ejecutados.
 
 ## 2. Dependencias
 
@@ -33,6 +33,8 @@ instaló dependencias directas: usa stdlib, Pydantic y los contratos existentes.
 | `pydantic-settings>=2.14,<3` | Carga tipada de secretos desde el entorno. | `env_file=None`; no lee `.env` ni persiste secretos. |
 | `PyYAML>=6.0.3,<7` | Parseo seguro de `agent.config.yaml`. | `safe_load` seguido siempre por validación Pydantic. |
 | `typer>=0.26,<1` | CLI tipada y adaptador de aprobación interactiva. | Solo capa CLI; no hay `input()` en el núcleo. |
+| `langfuse>=4.7,<5` | Observabilidad requerida con API v4 y trace id real. | Sólo adapter/composición; no-op si está deshabilitado o falla. |
+| `tavily-python>=0.7,<1` | Fallback web técnico autorizado para evidencia insuficiente. | Sólo búsqueda `basic`, dominios HTTPS permitidos y presupuesto máximo de una llamada en la demo. |
 
 `setuptools>=77` es el backend PEP 517 de build y no se importa en runtime.
 
@@ -49,10 +51,11 @@ instaló dependencias directas: usa stdlib, Pydantic y los contratos existentes.
 
 ### 2.3 Dependencias diferidas
 
-`httpx`, `tavily-python`, `langfuse`, `pytest-timeout`, `fastapi`, `uvicorn` y
-`detect-secrets` siguen propuestas para sus fases respectivas, pero no se
-declararon prematuramente. No se propone ningún framework de orquestación ni
-librería vectorial; el diseño mantiene SQLite y puertos reemplazables.
+`httpx`, `pytest-timeout`, `fastapi`, `uvicorn` y `detect-secrets` no se agregan
+al paquete principal. Langfuse y Tavily se declararon e instalaron el
+2026-07-16 después de autorización explícita. No se usa ningún framework de
+orquestación ni librería vectorial; el diseño mantiene SQLite y puertos
+reemplazables.
 
 ## 3. Fases
 
@@ -461,9 +464,10 @@ Evidencia ejecutada:
 - `.venv/bin/ruff check src tests examples`: sin hallazgos, exit code 0;
 - `.venv/bin/mypy src tests`: sin issues en 94 archivos, exit code 0.
 
-Pendientes no ocultos: no hay SDK/credenciales/traza/capturas Langfuse, no hay
-composición real OpenAI con cinco agentes y no se ejecutaron tests HTTP FastAPI.
-Fase 09 corrigió la portabilidad de paths de los artifacts.
+Pendientes históricos de ese checkpoint: no había traza/capturas Langfuse, no
+había composición real OpenAI con cinco agentes y no se ejecutaron tests HTTP
+FastAPI. La sección posterior documenta el cierre del código, no una corrida
+externa inexistente.
 
 ### Fase 09 - Auditoría final
 
@@ -518,7 +522,79 @@ Evidencia ejecutada:
 - los escaneos no encontraron frameworks prohibidos, secretos reales ni paths
   del autor;
 - `docs/final_audit.md`, matriz y checklist separan PASS, FAIL, PARTIAL y acción
-  humana. R29/R35/R43 siguen pendientes de Langfuse real/capturas.
+  humana. En ese momento R29/R35/R43 seguían pendientes de Langfuse real/capturas.
+
+### Checkpoint posterior a Fase 09 — providers reales autorizados
+
+Estado: `DONE`; ejecución externa completa, capturas Langfuse pendientes.
+
+Con autorización explícita del 2026-07-16 se agregaron únicamente `langfuse` y
+`tavily-python`. Se implementaron el provider Tavily acotado, un backend OpenAI
+Responses compartido por los cinco roles y `coding-agent demo real`. La
+composición incluye memoria, contexto presupuestado, RAG-first, policy antes de
+cada tool, no-progreso y una traza Langfuse raíz. Los límites por defecto son 15
+llamadas LLM, cuatro iteraciones por rol, 1800 tokens de salida y una búsqueda
+Tavily `basic`; la CLI exige `--confirm-cost`.
+
+Evidencia local del checkpoint:
+
+- suite offline: 137 passed y 1 integración Langfuse omitida sin entorno;
+- Ruff: exit 0;
+- mypy: exit 0 en 101 archivos;
+- guard de costo sin `--confirm-cost`: exit 2 antes de crear providers;
+- no se leyó `.env` ni se realizó una llamada externa durante la implementación.
+
+Primer intento humano: `real-openai-20260716-223318` quedó `blocked` en Explorer
+con trace id `e3e18abb93d9e4cbc427b6bdfc03caaa`. La causa fue un seed contaminado
+por entorno/caches y ausencia de un turno reservado para submit. La corrección
+filtra generados y ajusta el protocolo de turnos sin aumentar los límites.
+
+Segundo intento humano: `real-openai-20260716-224029` verificó el seed limpio y
+registró diez policies permitidas, pero quedó `failed` cuando OpenAI devolvió
+argumentos de function call que no eran JSON válido; trace id
+`fb1df898e7cbb0a88eebc6d3aa2c8cab`. Se agregó recuperación estructurada de
+`invalid_tool_arguments`, cero ejecución para la llamada malformada y máximo
+cuatro work tools por respuesta. El gate posterior terminó con 139 passed, 1
+skip condicional, Ruff y mypy en exit 0. Pendiente: reejecutar, revisar el nuevo
+artifact/trace id y guardar capturas auténticas.
+
+Tercer intento humano: `real-openai-20260716-224955` quedó `blocked` con exit
+2 y trace id `3a3129ac11a8a4e0355bea72df2660e6`. Explorer preservó ocho
+evidencias limpias, pero en el cuarto turno volvió a usar una tool porque las
+definitions de trabajo seguían disponibles. La corrección expone sólo
+`submit_agent_result` en el último turno y está cubierta por el test del
+backend, sin aumentar iteraciones, tokens ni llamadas.
+
+Cuarto intento humano: `real-openai-20260716-225405` llegó a Tester después de
+RAG/web e implementación; trace id `8a53e02921325eb21456671398423539`. El
+`pytest -q` registrado terminó 4 por ausencia de FastAPI en el entorno
+principal y el replan agotó 15/15 antes de Reviewer. El mismo workspace pasó
+`3 passed`, exit 0, usando el `.venv` aislado ya existente del demo. No se
+agregaron dependencias. Pendiente: una ejecución con ese binario en `PATH` y
+presupuesto global 20 para permitir hasta cuatro turnos en cada uno de los cinco
+roles.
+
+Quinto intento humano: `real-openai-20260716-230132` recuperó memoria real del
+intento anterior y consultó repository/RAG/web; trace id
+`38413a02a1e66af00ec8d7de6fc26def`. Researcher se bloqueó al confundir el fallo
+histórico de Tester con su propio criterio. Se reforzó el contrato para priorizar
+evidencia actual, no exigir trabajo downstream y usar 2400 tokens de salida para
+reducir JSON truncado. La regresión focalizada pasa sin providers reales.
+
+Sexto intento humano: `real-openai-20260716-230907` completó Explorer,
+Researcher e Implementer y preservó el diff esperado; trace id
+`a237b059da41edb2fe38febbc160a693`. Tester solicitó
+`/usr/bin/env bash -lc "pytest -q"`, que la policy denegó correctamente. Se
+mantuvo la allowlist estricta y se aclaró el contrato del rol para usar argv
+directo `['pytest', '-q']`, sin wrappers de shell. La regresión queda cubierta
+por un test unitario y no requiere dependencias nuevas.
+
+Séptimo intento humano: `real-openai-20260716-231650` terminó `completed`, exit
+0, con trace id `8248244a2224f1dc099fff1240e5c040`. Completó los cinco roles,
+recuperó memoria, consultó repository/RAG/web, produjo el diff esperado,
+ejecutó `pytest -q` con `3 passed` y Reviewer aceptó. El exportador se reforzó
+para sustituir el home local por `${HOME}` y el bundle se revalidó sin cambiar
+resultados ni ids. Sólo resta la captura humana de la traza.
 
 ## 4. Reglas de secuencia y gates globales
 

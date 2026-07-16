@@ -1,6 +1,8 @@
 import hashlib
 from pathlib import Path
 
+import pytest
+
 from coding_agent.rag import (
     CollectionSpec,
     DeterministicFakeEmbeddings,
@@ -10,6 +12,7 @@ from coding_agent.rag import (
     SQLiteVectorStore,
     TechnicalChunker,
 )
+from coding_agent.rag.vector_store import _cosine
 
 
 def embedded() -> tuple[CollectionSpec, EmbeddedChunk, tuple[float, ...]]:
@@ -66,3 +69,14 @@ def test_vector_store_persists_and_retrieves_relevant_chunk(tmp_path: Path) -> N
     assert hits[0].chunk.metadata.source_id == "fastapi-dependencies"
     assert hits[0].chunk.metadata.path_or_url.startswith("https://fastapi.tiangolo.com")
     reopened.close()
+
+
+def test_cosine_clamps_floating_point_drift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "coding_agent.rag.vector_store.math.sqrt",
+        lambda value: 0.9999999999999999,
+    )
+
+    assert _cosine((1.0,), (1.0,)) == 1.0

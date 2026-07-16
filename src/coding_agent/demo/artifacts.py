@@ -42,7 +42,13 @@ class ArtifactEvent(FrozenModel):
 class RunArtifact(FrozenModel):
     schema_version: Literal["1.0"] = "1.0"
     run_id: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{2,80}$")
-    scenario: Literal["rag", "memory_session_1", "memory_session_2", "safety"]
+    scenario: Literal[
+        "rag",
+        "memory_session_1",
+        "memory_session_2",
+        "safety",
+        "real_rag",
+    ]
     task_id: str = Field(min_length=1)
     project_id: str = Field(min_length=1)
     session_id: str = Field(min_length=1)
@@ -150,6 +156,7 @@ def _path_replacements(state: TaskState) -> tuple[tuple[str, str], ...]:
         (str(state.request.workspace.resolve()), "${WORKSPACE}"),
         (sys.executable, "${PYTHON}"),
         (str(Path(sys.executable).resolve()), "${PYTHON}"),
+        (str(Path.home().resolve()), "${HOME}"),
     )
     return tuple(dict.fromkeys(replacements))
 

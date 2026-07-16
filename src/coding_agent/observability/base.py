@@ -28,6 +28,9 @@ class Observation(Protocol):
 
 
 class Tracer(Protocol):
+    @property
+    def trace_id(self) -> str | None: ...
+
     def observe(
         self,
         name: str,

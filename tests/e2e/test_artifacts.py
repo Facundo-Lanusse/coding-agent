@@ -45,3 +45,11 @@ def test_artifact_bundle_has_valid_schema_and_required_files(tmp_path: Path) -> 
     assert "${PYTHON}" in persisted
     assert loaded.trace_id is None
     assert loaded.observability == "recording"
+
+    home_probe = run.artifact.model_copy(
+        update={"memory_retrieved": (f"{Path.home()}/private/project",)}
+    )
+    ArtifactWriter(output).write(home_probe, run.state)
+    memory_payload = (run.artifact_directory / "memory.json").read_text(encoding="utf-8")
+    assert str(Path.home()) not in memory_payload
+    assert "${HOME}/private/project" in memory_payload

@@ -8,7 +8,7 @@ from typing import Protocol
 from pydantic import Field
 
 from coding_agent.harness.loop import ToolBinding
-from coding_agent.models import ErrorInfo, FrozenModel, FunctionCall, ToolResult
+from coding_agent.models import ErrorInfo, FrozenModel, FunctionCall, ToolDefinition, ToolResult
 from coding_agent.state import (
     AgentName,
     AgentResult,
@@ -48,6 +48,8 @@ class AgentContext(FrozenModel):
     checks: tuple[CheckResult, ...] = ()
     observations: tuple[str, ...] = ()
     errors: tuple[ErrorInfo, ...] = ()
+    context_included: tuple[str, ...] = ()
+    context_omitted: tuple[str, ...] = ()
 
 
 class ScopedToolbox:
@@ -65,7 +67,7 @@ class ScopedToolbox:
         return frozenset(self._bindings)
 
     @property
-    def definitions(self) -> tuple[object, ...]:
+    def definitions(self) -> tuple[ToolDefinition, ...]:
         return tuple(binding.definition for binding in self._bindings.values())
 
     def execute(self, call: FunctionCall) -> ToolResult:

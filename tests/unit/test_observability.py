@@ -72,6 +72,14 @@ class FakeHandle:
         updates.append(kwargs)
         return None
 
+    @property
+    def trace_id(self) -> str | None:
+        context = self.entry.get("trace_context")
+        if not isinstance(context, dict):
+            return None
+        value = context.get("trace_id")
+        return value if isinstance(value, str) else None
+
 
 class FakeManager(AbstractContextManager[LangfuseObservationHandle]):
     def __init__(self, client: FakeLangfuseClient, entry: dict[str, object]) -> None:
@@ -111,6 +119,10 @@ class FakeLangfuseClient:
     def flush(self) -> object:
         self.flushed = True
         return None
+
+    def create_trace_id(self, *, seed: str | None = None) -> str:
+        del seed
+        return "a" * 32
 
 
 class ExplodingLangfuseClient:
@@ -186,6 +198,54 @@ def test_factory_uses_noop_without_credentials_or_sdk() -> None:
     tracer = create_tracer(config, environment={})
 
     assert isinstance(tracer, NoOpTracer)
+
+
+def test_factory_sets_trace_id_and_maps_generation_usage_for_langfuse() -> None:
+    client = FakeLangfuseClient()
+    config = ObservabilityConfig(
+        provider="langfuse",
+        enabled=True,
+        redact_sensitive_data=True,
+        capture_content=False,
+        max_payload_chars=1_000,
+    )
+    tracer = create_tracer(
+        config,
+        environment={
+            "LANGFUSE_PUBLIC_KEY": "public-test-placeholder",
+            "LANGFUSE_SECRET_KEY": "secret-test-placeholder",
+        },
+        client=client,
+        trace_seed="task-1",
+    )
+    assert isinstance(tracer, LangfuseTracer)
+
+    with (
+        tracer.observe("task.run", kind=ObservationKind.TASK),
+        tracer.observe(
+            "llm.response",
+            kind=ObservationKind.GENERATION,
+            metadata={"model": "test-model"},
+        ) as generation,
+    ):
+        generation.update(
+            output="done",
+            metadata={
+                "input_tokens": 10,
+                "output_tokens": 4,
+                "total_tokens": 14,
+                "cost": 0.01,
+            },
+        )
+
+    assert tracer.trace_id == "a" * 32
+    assert client.entries[0]["trace_context"] == {"trace_id": "a" * 32}
+    assert "trace_context" not in client.entries[1]
+    assert client.entries[1]["model"] == "test-model"
+    updates = client.entries[1]["updates"]
+    assert isinstance(updates, list)
+    assert updates[0]["usage_details"] == {"input": 10, "output": 4, "total": 14}
+    assert updates[0]["cost_details"] == {"total": 0.01}
 
 
 class FakeLLM:
@@ -477,3 +537,13 @@ def test_sanitizer_limits_payload_and_redacts_pattern_secrets() -> None:
 
     assert credential not in str(sanitized)
     assert len(str(sanitized)) <= 130
+
+
+def test_sanitizer_replaces_local_home_path() -> None:
+    sanitizer = Sanitizer(environment={})
+    local_path = f"{Path.home()}/project/tests"
+
+    sanitized = sanitizer.sanitize({"output": local_path})
+
+    assert str(Path.home()) not in str(sanitized)
+    assert "${HOME}/project/tests" in str(sanitized)

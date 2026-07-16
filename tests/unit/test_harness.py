@@ -11,6 +11,7 @@ from coding_agent.models import (
     FunctionCallOutput,
     LLMRequest,
     LLMResponse,
+    MessageInput,
     Plan,
     ProviderInput,
     RunStatus,
@@ -157,6 +158,35 @@ def test_rejected_plan_cancels_before_execution_loop() -> None:
     assert result.error is not None
     assert result.error.code == "approval_rejected"
     assert len(approval.requests) == 1
+
+
+def test_approved_plan_executes_without_requesting_confirmation_again() -> None:
+    llm = FakeLLM(
+        (
+            LLMResponse(text="1. Inspect files.\n\nConfirm that I should proceed."),
+            LLMResponse(text="Repository evidence inspected."),
+        )
+    )
+    approval = RecordingApprovalProvider(approved=True)
+    harness = CodingAgentHarness(llm, approval_provider=approval)
+
+    result = harness.run(
+        AgentRunRequest(
+            task="Analyze the repository",
+            plan_mode=True,
+            supervision_mode=False,
+        )
+    )
+
+    assert result.status is RunStatus.COMPLETED
+    assert result.final_answer == "Repository evidence inspected."
+    assert len(approval.requests) == 1
+    assert "do not ask for confirmation" in llm.requests[0].instructions.lower()
+    assert "plan has already been approved" in llm.requests[1].instructions.lower()
+    execution_input = llm.requests[1].input[-1]
+    assert isinstance(execution_input, MessageInput)
+    assert "approval has already been granted" in execution_input.content.lower()
+    assert "confirmation request inside the plan is obsolete" in execution_input.content
 
 
 def test_supervision_rejection_does_not_execute_tool() -> None:

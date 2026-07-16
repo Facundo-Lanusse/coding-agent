@@ -33,6 +33,10 @@ class NoOpObservation:
 class NoOpTracer:
     """Accept every observation call and perform no external work."""
 
+    @property
+    def trace_id(self) -> str | None:
+        return None
+
     def observe(
         self,
         name: str,

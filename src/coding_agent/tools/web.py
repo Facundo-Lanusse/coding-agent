@@ -1,4 +1,4 @@
-"""Provider-neutral web search tool; real provider is composed in a later phase."""
+"""Provider-neutral web search tool; Tavily is composed only by the real demo."""
 
 from __future__ import annotations
 

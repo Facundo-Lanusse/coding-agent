@@ -5,6 +5,7 @@ from coding_agent.context import (
     ContextCandidate,
     ContextKind,
     ContextManager,
+    ExtractiveSummaryProvider,
     OmissionReason,
     StructuredSummary,
     SummaryProvider,
@@ -96,3 +97,22 @@ def test_context_budget_is_respected_and_manifest_explains_omissions() -> None:
     assert omissions["large"] is OmissionReason.BUDGET
     assert omissions["irrelevant"] is OmissionReason.IRRELEVANT
     assert [item.item_id for item in selection.included] == ["decision", "useful"]
+
+
+def test_extractive_summary_is_bounded_and_does_not_add_facts() -> None:
+    provider = ExtractiveSummaryProvider()
+    request = SummaryRequest(
+        candidates=(
+            candidate("old", ContextKind.HISTORY, "FastAPI routers delegate to services."),
+        ),
+        protected_decision_ids=("decision-1",),
+        protected_error_ids=("error-1",),
+        max_chars=60,
+    )
+
+    summary = provider.summarize(request)
+
+    assert len(summary.content) <= 60
+    assert "FastAPI routers" in summary.content
+    assert summary.preserved_decision_ids == ("decision-1",)
+    assert summary.preserved_error_ids == ("error-1",)

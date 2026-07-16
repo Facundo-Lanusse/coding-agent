@@ -127,13 +127,58 @@ construidos desde before/after y no depende de `git diff`.
 
 ## 8. Demo real y Langfuse
 
-Estado actual:
+La composición real está implementada, pero es deliberadamente opt-in. Cargá
+las variables sin mostrar sus valores:
+
+```bash
+set -a
+source .env
+set +a
+coding-agent config validate --config agent.config.yaml
+```
+
+Primero comprobá el guard sin costo; debe terminar con exit 2 y el mensaje
+`No API call made`:
 
 ```bash
 coding-agent demo real --scenario rag
 ```
 
-termina con exit 2 aun con prerrequisitos: la composición multiagente real
-requiere implementación y aprobación de costo. No lo uses para fabricar un
-resultado. El procedimiento de captura está bloqueado como explica
+Después verificá que exista el entorno aislado del demo y ejecutá una sola
+corrida acotada. Anteponerlo al `PATH` permite que Tester encuentre
+FastAPI/HTTPX sin instalarlos en el agente:
+
+```bash
+DEMO_BIN="$PWD/examples/fastapi_demo/seed/.venv/bin"
+PATH="$DEMO_BIN:$PATH" .venv/bin/coding-agent demo real \
+  --scenario rag \
+  --confirm-cost \
+  --max-llm-calls 20 \
+  --max-iterations-per-agent 4 \
+  --max-output-tokens 2400 \
+  --runtime-root tmp/demo-runtime \
+  --output-root docs/evidence/runs
+```
+
+También existe `make demo-real`, que hace el preflight del entorno sin instalar
+nada. Veinte llamadas permiten hasta cuatro turnos por cada uno de los cinco
+roles; los tokens siguen limitados y Tavily admite como máximo una búsqueda
+`basic`. La demo crea una copia nueva
+`tmp/demo-runtime/real-openai-<fecha>`, nunca modifica `seed/`.
+
+Al finalizar, la CLI imprime el directorio y el trace id. Verificá:
+
+```bash
+RUN_DIR="$(ls -dt docs/evidence/runs/real-openai-* | head -1)"
+python -m json.tool "$RUN_DIR/run.json"
+python -m json.tool "$RUN_DIR/task_state.json"
+python -m json.tool "$RUN_DIR/sources.json"
+python -m json.tool "$RUN_DIR/commands.json"
+```
+
+`run.json` debe mostrar `provider_mode=real`, `observability=langfuse` y
+`trace_id` no vacío. `status=completed` sólo es válido si Tester guardó un check
+real y Reviewer aceptó. Si termina con exit 2, no borres el artifact: inspeccioná
+`task_state.json` y `events.json` antes de decidir si repetir. Las capturas se
+guardan siguiendo
 [`evidence/screenshots/README.md`](evidence/screenshots/README.md).

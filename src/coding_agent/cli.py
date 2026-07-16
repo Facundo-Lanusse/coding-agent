@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
-from importlib.util import find_spec
 from pathlib import Path
 from typing import Annotated, NoReturn
 
@@ -42,6 +40,7 @@ from coding_agent.rag import (
     TechnicalChunker,
     VectorStoreError,
 )
+from coding_agent.runtime import RealDemoError, run_real_demo
 from coding_agent.tools import ToolRole, build_default_registry
 
 app = typer.Typer(
@@ -290,25 +289,64 @@ def demo_all(
 @demo_app.command("real")
 def demo_real(
     scenario: Annotated[str, typer.Option("--scenario")] = "rag",
+    config: ConfigPath = Path("agent.config.yaml"),
+    runtime_root: Annotated[Path, typer.Option("--runtime-root")] = Path(
+        "tmp/demo-runtime"
+    ),
+    output_root: Annotated[Path, typer.Option("--output-root")] = Path(
+        "docs/evidence/runs"
+    ),
+    max_llm_calls: Annotated[
+        int,
+        typer.Option("--max-llm-calls", min=5, max=25),
+    ] = 15,
+    max_iterations_per_agent: Annotated[
+        int,
+        typer.Option("--max-iterations-per-agent", min=1, max=6),
+    ] = 4,
+    max_output_tokens: Annotated[
+        int,
+        typer.Option("--max-output-tokens", min=256, max=4_000),
+    ] = 1_800,
+    confirm_cost: Annotated[
+        bool,
+        typer.Option(
+            "--confirm-cost",
+            help="Explicitly allow bounded OpenAI/Tavily API usage for this run.",
+        ),
+    ] = False,
 ) -> None:
-    """Validate prerequisites for the opt-in real provider execution."""
+    """Run the real five-agent RAG scenario with hard provider-call limits."""
 
-    required = ("OPENAI_API_KEY", "LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY")
-    missing = tuple(name for name in required if not os.getenv(name))
-    if missing or find_spec("langfuse") is None:
-        typer.echo("Real demo not executed; prerequisites are missing.", err=True)
+    if scenario != "rag":
+        typer.echo("Only --scenario rag is implemented for the bounded real demo.", err=True)
+        raise typer.Exit(code=2)
+    if not confirm_cost:
         typer.echo(
-            "export OPENAI_API_KEY LANGFUSE_PUBLIC_KEY LANGFUSE_SECRET_KEY LANGFUSE_BASE_URL",
+            "No API call made. Re-run with --confirm-cost after reviewing the limits.",
             err=True,
         )
-        typer.echo(f"coding-agent demo real --scenario {scenario}", err=True)
         raise typer.Exit(code=2)
-    typer.echo(
-        "Credentials and SDK are present, but real five-agent composition requires explicit "
-        "provider-cost approval; no external call was made.",
-        err=True,
-    )
-    raise typer.Exit(code=2)
+    try:
+        run = run_real_demo(
+            config_path=config,
+            seed_root=_demo_seed(),
+            rag_sources=Path("rag_sources"),
+            runtime_root=runtime_root,
+            output_root=output_root,
+            approval_provider=TyperApprovalProvider(),
+            max_llm_calls=max_llm_calls,
+            max_iterations_per_agent=max_iterations_per_agent,
+            max_output_tokens=max_output_tokens,
+        )
+    except (ConfigurationError, RealDemoError) as exc:
+        typer.echo(f"{getattr(exc, 'code', 'real_demo_error')}: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+    typer.echo(run.artifact.model_dump_json(indent=2))
+    typer.echo(f"Artifacts: {run.artifact_directory}")
+    typer.echo(f"Langfuse trace id: {run.artifact.trace_id}")
+    if run.state.status.value != "completed":
+        raise typer.Exit(code=2)
 
 
 def _rag_runtime(

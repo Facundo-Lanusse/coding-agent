@@ -151,6 +151,18 @@ class RuntimeSettings(BaseSettings):
         default=None,
         validation_alias="OPENAI_API_KEY",
     )
+    tavily_api_key: SecretStr | None = Field(
+        default=None,
+        validation_alias="TAVILY_API_KEY",
+    )
+    langfuse_public_key: SecretStr | None = Field(
+        default=None,
+        validation_alias="LANGFUSE_PUBLIC_KEY",
+    )
+    langfuse_secret_key: SecretStr | None = Field(
+        default=None,
+        validation_alias="LANGFUSE_SECRET_KEY",
+    )
 
 
 class ConfigObservation(Protocol):

@@ -7,6 +7,7 @@ depends on :class:`LLMClient` and can therefore use deterministic fakes.
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Mapping, Sequence
 from typing import Protocol, cast
 
@@ -85,9 +86,7 @@ class OpenAIResponsesClient:
         try:
             raw_response = self._client.responses.create(**payload)
         except Exception as exc:
-            raise LLMProviderError(
-                f"OpenAI Responses API request failed ({type(exc).__name__})."
-            ) from exc
+            raise LLMProviderError(_provider_error_message(exc)) from exc
 
         return self._parse_response(raw_response)
 
@@ -129,8 +128,15 @@ class OpenAIResponsesClient:
 
             call_id = _required_string(item, "call_id")
             name = _required_string(item, "name")
-            arguments = _parse_arguments(item.get("arguments"))
-            tool_calls.append(FunctionCall(call_id=call_id, name=name, arguments=arguments))
+            arguments, arguments_error = _parse_arguments(item.get("arguments"))
+            tool_calls.append(
+                FunctionCall(
+                    call_id=call_id,
+                    name=name,
+                    arguments=arguments,
+                    arguments_error=arguments_error,
+                )
+            )
 
         usage_object = getattr(raw_response, "usage", None)
         usage = LLMUsage(
@@ -177,24 +183,24 @@ def _required_string(data: Mapping[str, object], key: str) -> str:
     return value
 
 
-def _parse_arguments(value: object) -> dict[str, object]:
+def _parse_arguments(value: object) -> tuple[dict[str, object], str | None]:
     if isinstance(value, str):
         try:
             parsed: object = json.loads(value)
-        except json.JSONDecodeError as exc:
-            raise LLMResponseError("OpenAI function call arguments are not valid JSON.") from exc
+        except json.JSONDecodeError:
+            return {}, "OpenAI function call arguments are not valid JSON."
     else:
         parsed = value
 
     if not isinstance(parsed, dict):
-        raise LLMResponseError("OpenAI function call arguments must be a JSON object.")
+        return {}, "OpenAI function call arguments must be a JSON object."
 
     arguments: dict[str, object] = {}
     for key, item in parsed.items():
         if not isinstance(key, str):
             raise LLMResponseError("OpenAI function argument keys must be strings.")
         arguments[key] = item
-    return arguments
+    return arguments, None
 
 
 def _optional_string_attribute(value: object, name: str) -> str | None:
@@ -205,3 +211,20 @@ def _optional_string_attribute(value: object, name: str) -> str | None:
 def _integer_attribute(value: object, name: str) -> int:
     attribute = getattr(value, name, 0)
     return attribute if isinstance(attribute, int) and attribute >= 0 else 0
+
+
+_SECRET_PATTERNS = (
+    re.compile(r"\bBearer\s+[A-Za-z0-9._~+/=-]+", re.IGNORECASE),
+    re.compile(r"\b(?:sk|pk)-[A-Za-z0-9_-]{8,}\b"),
+)
+_MAX_PROVIDER_ERROR_CHARS = 500
+
+
+def _provider_error_message(exc: Exception) -> str:
+    prefix = f"OpenAI Responses API request failed ({type(exc).__name__})."
+    detail = " ".join(str(exc).split())
+    for pattern in _SECRET_PATTERNS:
+        detail = pattern.sub("[REDACTED]", detail)
+    if not detail:
+        return prefix
+    return f"{prefix} {detail[:_MAX_PROVIDER_ERROR_CHARS]}"

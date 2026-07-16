@@ -12,6 +12,12 @@ from coding_agent.agents.base import (
 )
 from coding_agent.agents.explorer import ExplorerAgent
 from coding_agent.agents.implementer import ImplementerAgent
+from coding_agent.agents.openai_backend import (
+    AgentBackendError,
+    LLMCallBudget,
+    LLMCallBudgetError,
+    OpenAIAgentBackend,
+)
 from coding_agent.agents.researcher import ResearcherAgent
 from coding_agent.agents.reviewer import ReviewerAgent
 from coding_agent.agents.tester import TesterAgent
@@ -19,11 +25,15 @@ from coding_agent.agents.tester import TesterAgent
 __all__ = [
     "Agent",
     "AgentBackend",
+    "AgentBackendError",
     "AgentContext",
     "AgentContractError",
     "BaseAgent",
     "ExplorerAgent",
     "ImplementerAgent",
+    "LLMCallBudget",
+    "LLMCallBudgetError",
+    "OpenAIAgentBackend",
     "PriorAgentSummary",
     "ResearcherAgent",
     "ReviewerAgent",

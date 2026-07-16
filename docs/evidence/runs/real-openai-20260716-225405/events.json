@@ -1,0 +1,127 @@
+[
+  {
+    "detail": "received -> planning",
+    "event_type": "plan_created",
+    "outcome": "planning"
+  },
+  {
+    "detail": "planning -> exploring",
+    "event_type": "execution_started",
+    "outcome": "exploring"
+  },
+  {
+    "detail": "exploring -> researching",
+    "event_type": "agent_completed",
+    "outcome": "researching"
+  },
+  {
+    "detail": "researching -> implementing",
+    "event_type": "agent_completed",
+    "outcome": "implementing"
+  },
+  {
+    "detail": "implementing -> testing",
+    "event_type": "agent_completed",
+    "outcome": "testing"
+  },
+  {
+    "detail": "testing -> replanning",
+    "event_type": "validation_failed",
+    "outcome": "replanning"
+  },
+  {
+    "detail": "replanning -> implementing",
+    "event_type": "replan_completed",
+    "outcome": "implementing"
+  },
+  {
+    "detail": "implementing -> blocked",
+    "event_type": "agent_blocked",
+    "outcome": "blocked"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "commands.builtin.shell_interpreter: Command is denied by a non-overridable safety rule.",
+    "event_type": "policy",
+    "outcome": "denied"
+  },
+  {
+    "detail": "commands.allow_by_role.tester: Command matches the role-specific allowlist.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  }
+]

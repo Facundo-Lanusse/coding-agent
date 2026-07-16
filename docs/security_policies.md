@@ -97,7 +97,8 @@ registra los outcomes en
 
 Limitaciones:
 
-- `web_search` sólo tiene un proveedor no disponible por defecto y fakes;
+- `web_search` usa fakes en tests y Tavily real sólo en `demo real`, con
+  allowlist HTTPS y una búsqueda `basic` como máximo;
 - la policy reduce riesgo, no crea un sandbox de sistema operativo;
 - Git fue inicializado al preparar la publicación, pero aún no existe un commit
   baseline; el primer diff completo deberá validarse después del commit humano;

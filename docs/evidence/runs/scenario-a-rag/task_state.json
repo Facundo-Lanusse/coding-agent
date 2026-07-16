@@ -15,7 +15,7 @@
           "content": "Routers delegate to services; services construct typed responses.",
           "evidence_id": "rag-repo-architecture",
           "locator": "README.md:Architecture",
-          "observed_at": "2026-07-15T00:50:02.508411Z",
+          "observed_at": "2026-07-16T21:10:56.691202Z",
           "reference": "README.md",
           "source": "repository",
           "supports": []
@@ -47,7 +47,7 @@
           "output_digest": "14cbc312c2d79540334d91191b8b4f0bf97653cb8ef0cf2eeb98ae185adec517",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.508433Z",
+          "started_at": "2026-07-16T21:10:56.691214Z",
           "status": "executed",
           "tool_name": "list_files"
         },
@@ -64,7 +64,7 @@
           "output_digest": "bdf16a4390ec18faac1756ed7a1d7a7674bffa443cdfe6af938140dc1d348caa",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.508440Z",
+          "started_at": "2026-07-16T21:10:56.691221Z",
           "status": "executed",
           "tool_name": "read_file"
         },
@@ -81,7 +81,7 @@
           "output_digest": "6513d94c31a0112f85665b6f65b38ce1e4d4bd603233674a31a62b152723eee3",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.508444Z",
+          "started_at": "2026-07-16T21:10:56.691225Z",
           "status": "executed",
           "tool_name": "read_file"
         }
@@ -102,7 +102,7 @@
           "content": "# pytest fixtures\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n estable enlazada en el manifest.\n\n## Contexto expl\u00edcito para tests\n\nUna fixture proporciona contexto confiable y repetible para un test. Se define\ncon `@pytest.fixture` y se solicita declarando su nombre como argumento del test\no de otra fixture.\n\n```python\nimport pytest\n\n@pytest.fixture\ndef sample_items() -> list[str]:\n    return [\"one\", \"two\"]\n\ndef test_items(sample_items: list[str]) -> None:\n    assert len(sample_items) == 2\n```\n\n## Alcance y limpieza\n\nLas fixtures pueden tener alcance de funci\u00f3n, clase, m\u00f3dulo, paquete o sesi\u00f3n.\nUna fixture con `yield` puede ejecutar la limpieza despu\u00e9s del test. Las\ndependencias expl\u00edcitas entre fixtures permiten que pytest determine el orden de\npreparaci\u00f3n.",
           "evidence_id": "rag-b0eb7a7300d324dff24c8147be2209c10a2e290307646cf55ded291a25551f6b",
           "locator": "pytest - Fixtures > pytest fixtures > Alcance y limpieza > chunk 0",
-          "observed_at": "2026-07-15T00:50:02.509120Z",
+          "observed_at": "2026-07-16T21:10:56.691992Z",
           "reference": "https://docs.pytest.org/en/stable/how-to/fixtures.html",
           "source": "rag",
           "supports": []
@@ -113,7 +113,7 @@
           "content": "# FastAPI dependencies\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n oficial enlazada en el manifest.\n\n## Declaraci\u00f3n con Depends\n\nUna dependencia de FastAPI es un callable. La operaci\u00f3n declara que depende de\nese callable usando `Depends`; FastAPI lo ejecuta y entrega su resultado al\npar\u00e1metro correspondiente. Para Python moderno, la documentaci\u00f3n recomienda\nconservar la anotaci\u00f3n de tipo mediante `Annotated`.\n\n```python\nfrom typing import Annotated\n\nfrom fastapi import Depends, FastAPI\n\napp = FastAPI()\n\ndef common_parameters(limit: int = 20) -> dict[str, int]:\n    return {\"limit\": limit}\n\n@app.get(\"/items\")\ndef list_items(params: Annotated[dict[str, int], Depends(common_parameters)]):\n    return params\n```\n\n## Composici\u00f3n\n\nLas dependencias pueden declarar subdependencias. FastAPI resuelve esa jerarqu\u00eda\ny reutiliza dentro de la misma request los resultados cacheados por defecto.\nTambi\u00e9n integra las declaraciones de dependencias en el esquema OpenAPI.",
           "evidence_id": "rag-cdae1ce66ce842b0ee704f032bf5aa077d29a97ef5b68e8a109f1c71f3011ad9",
           "locator": "FastAPI - Dependencies > FastAPI dependencies > Composici\u00f3n > chunk 0",
-          "observed_at": "2026-07-15T00:50:02.509124Z",
+          "observed_at": "2026-07-16T21:10:56.691996Z",
           "reference": "https://fastapi.tiangolo.com/tutorial/dependencies/",
           "source": "rag",
           "supports": []
@@ -124,7 +124,7 @@
           "content": "# Pydantic models\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n oficial enlazada en el manifest.\n\n## Validaci\u00f3n\n\nUn modelo hereda de `BaseModel` y declara campos mediante anotaciones. Pydantic\nvalida los datos de entrada y construye una instancia que respeta los tipos y\nrestricciones declarados.\n\n```python\nfrom pydantic import BaseModel, Field\n\nclass User(BaseModel):\n    name: str\n    age: int = Field(ge=0)\n```\n\n## Serializaci\u00f3n y configuraci\u00f3n\n\n`model_dump()` produce datos Python y `model_dump_json()` produce JSON. La\nconfiguraci\u00f3n del modelo permite, entre otras pol\u00edticas, rechazar campos extra o\nhacer instancias inmutables. Una inferencia del agente no debe confundirse con\nun hecho validado solo porque fue expresada mediante un modelo.",
           "evidence_id": "rag-6d3ec900ab1651a4524df411bc8fdf6749713f33c50fa8a87078aa667adcacb3",
           "locator": "Pydantic - Models > Pydantic models > Serializaci\u00f3n y configuraci\u00f3n > chunk 0",
-          "observed_at": "2026-07-15T00:50:02.509129Z",
+          "observed_at": "2026-07-16T21:10:56.691999Z",
           "reference": "https://pydantic.dev/docs/validation/latest/concepts/models/",
           "source": "rag",
           "supports": []
@@ -197,7 +197,7 @@
           "output_digest": "6c8877b094cfb46c7a33583d6957be82e685678368701b0a0dbe157b61792d4d",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.513002Z",
+          "started_at": "2026-07-16T21:10:56.695556Z",
           "status": "executed",
           "tool_name": "write_file"
         },
@@ -214,7 +214,7 @@
           "output_digest": "3920cd1ab6e1f1f893f9afafa0a26925b6148372ae03b54997f5c8fca5893a38",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.516296Z",
+          "started_at": "2026-07-16T21:10:56.698524Z",
           "status": "executed",
           "tool_name": "write_file"
         },
@@ -231,7 +231,7 @@
           "output_digest": "c4748468a9dea8f314e431bc8b756d227496912696f42860503faea7594ba0f0",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.519534Z",
+          "started_at": "2026-07-16T21:10:56.701452Z",
           "status": "executed",
           "tool_name": "write_file"
         }
@@ -313,7 +313,7 @@
           "output_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.883988Z",
+          "started_at": "2026-07-16T21:10:56.941687Z",
           "status": "executed",
           "tool_name": "run_command"
         },
@@ -335,7 +335,7 @@
           "output_digest": "4bcefcc9f6c645923b9993ccf73ad92e6b400ca25458ea14e095857fc2131342",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.883997Z",
+          "started_at": "2026-07-16T21:10:56.941702Z",
           "status": "executed",
           "tool_name": "run_command"
         }
@@ -384,7 +384,7 @@
       "actor": "main",
       "event_type": "plan_created",
       "from_status": "received",
-      "occurred_at": "2026-07-15T00:50:02.495921Z",
+      "occurred_at": "2026-07-16T21:10:56.679665Z",
       "payload": {},
       "revision": 1,
       "sequence": 1,
@@ -394,7 +394,7 @@
       "actor": "main",
       "event_type": "execution_started",
       "from_status": "planning",
-      "occurred_at": "2026-07-15T00:50:02.495935Z",
+      "occurred_at": "2026-07-16T21:10:56.679679Z",
       "payload": {},
       "revision": 2,
       "sequence": 2,
@@ -404,7 +404,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "exploring",
-      "occurred_at": "2026-07-15T00:50:02.508720Z",
+      "occurred_at": "2026-07-16T21:10:56.691658Z",
       "payload": {
         "agent": "explorer"
       },
@@ -416,7 +416,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "researching",
-      "occurred_at": "2026-07-15T00:50:02.509332Z",
+      "occurred_at": "2026-07-16T21:10:56.692193Z",
       "payload": {
         "agent": "researcher"
       },
@@ -428,7 +428,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "implementing",
-      "occurred_at": "2026-07-15T00:50:02.519817Z",
+      "occurred_at": "2026-07-16T21:10:56.701711Z",
       "payload": {
         "agent": "implementer"
       },
@@ -440,7 +440,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "testing",
-      "occurred_at": "2026-07-15T00:50:02.884444Z",
+      "occurred_at": "2026-07-16T21:10:56.942164Z",
       "payload": {
         "agent": "tester"
       },
@@ -452,7 +452,7 @@
       "actor": "main",
       "event_type": "task_completed",
       "from_status": "reviewing",
-      "occurred_at": "2026-07-15T00:50:02.885188Z",
+      "occurred_at": "2026-07-16T21:10:56.942891Z",
       "payload": {},
       "revision": 7,
       "sequence": 7,
@@ -466,7 +466,7 @@
       "content": "Routers delegate to services; services construct typed responses.",
       "evidence_id": "rag-repo-architecture",
       "locator": "README.md:Architecture",
-      "observed_at": "2026-07-15T00:50:02.508411Z",
+      "observed_at": "2026-07-16T21:10:56.691202Z",
       "reference": "README.md",
       "source": "repository",
       "supports": []
@@ -477,7 +477,7 @@
       "content": "# pytest fixtures\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n estable enlazada en el manifest.\n\n## Contexto expl\u00edcito para tests\n\nUna fixture proporciona contexto confiable y repetible para un test. Se define\ncon `@pytest.fixture` y se solicita declarando su nombre como argumento del test\no de otra fixture.\n\n```python\nimport pytest\n\n@pytest.fixture\ndef sample_items() -> list[str]:\n    return [\"one\", \"two\"]\n\ndef test_items(sample_items: list[str]) -> None:\n    assert len(sample_items) == 2\n```\n\n## Alcance y limpieza\n\nLas fixtures pueden tener alcance de funci\u00f3n, clase, m\u00f3dulo, paquete o sesi\u00f3n.\nUna fixture con `yield` puede ejecutar la limpieza despu\u00e9s del test. Las\ndependencias expl\u00edcitas entre fixtures permiten que pytest determine el orden de\npreparaci\u00f3n.",
       "evidence_id": "rag-b0eb7a7300d324dff24c8147be2209c10a2e290307646cf55ded291a25551f6b",
       "locator": "pytest - Fixtures > pytest fixtures > Alcance y limpieza > chunk 0",
-      "observed_at": "2026-07-15T00:50:02.509120Z",
+      "observed_at": "2026-07-16T21:10:56.691992Z",
       "reference": "https://docs.pytest.org/en/stable/how-to/fixtures.html",
       "source": "rag",
       "supports": []
@@ -488,7 +488,7 @@
       "content": "# FastAPI dependencies\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n oficial enlazada en el manifest.\n\n## Declaraci\u00f3n con Depends\n\nUna dependencia de FastAPI es un callable. La operaci\u00f3n declara que depende de\nese callable usando `Depends`; FastAPI lo ejecuta y entrega su resultado al\npar\u00e1metro correspondiente. Para Python moderno, la documentaci\u00f3n recomienda\nconservar la anotaci\u00f3n de tipo mediante `Annotated`.\n\n```python\nfrom typing import Annotated\n\nfrom fastapi import Depends, FastAPI\n\napp = FastAPI()\n\ndef common_parameters(limit: int = 20) -> dict[str, int]:\n    return {\"limit\": limit}\n\n@app.get(\"/items\")\ndef list_items(params: Annotated[dict[str, int], Depends(common_parameters)]):\n    return params\n```\n\n## Composici\u00f3n\n\nLas dependencias pueden declarar subdependencias. FastAPI resuelve esa jerarqu\u00eda\ny reutiliza dentro de la misma request los resultados cacheados por defecto.\nTambi\u00e9n integra las declaraciones de dependencias en el esquema OpenAPI.",
       "evidence_id": "rag-cdae1ce66ce842b0ee704f032bf5aa077d29a97ef5b68e8a109f1c71f3011ad9",
       "locator": "FastAPI - Dependencies > FastAPI dependencies > Composici\u00f3n > chunk 0",
-      "observed_at": "2026-07-15T00:50:02.509124Z",
+      "observed_at": "2026-07-16T21:10:56.691996Z",
       "reference": "https://fastapi.tiangolo.com/tutorial/dependencies/",
       "source": "rag",
       "supports": []
@@ -499,7 +499,7 @@
       "content": "# Pydantic models\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n oficial enlazada en el manifest.\n\n## Validaci\u00f3n\n\nUn modelo hereda de `BaseModel` y declara campos mediante anotaciones. Pydantic\nvalida los datos de entrada y construye una instancia que respeta los tipos y\nrestricciones declarados.\n\n```python\nfrom pydantic import BaseModel, Field\n\nclass User(BaseModel):\n    name: str\n    age: int = Field(ge=0)\n```\n\n## Serializaci\u00f3n y configuraci\u00f3n\n\n`model_dump()` produce datos Python y `model_dump_json()` produce JSON. La\nconfiguraci\u00f3n del modelo permite, entre otras pol\u00edticas, rechazar campos extra o\nhacer instancias inmutables. Una inferencia del agente no debe confundirse con\nun hecho validado solo porque fue expresada mediante un modelo.",
       "evidence_id": "rag-6d3ec900ab1651a4524df411bc8fdf6749713f33c50fa8a87078aa667adcacb3",
       "locator": "Pydantic - Models > Pydantic models > Serializaci\u00f3n y configuraci\u00f3n > chunk 0",
-      "observed_at": "2026-07-15T00:50:02.509129Z",
+      "observed_at": "2026-07-16T21:10:56.691999Z",
       "reference": "https://pydantic.dev/docs/validation/latest/concepts/models/",
       "source": "rag",
       "supports": []
@@ -548,7 +548,7 @@
             "content": "Routers delegate to services; services construct typed responses.",
             "evidence_id": "rag-repo-architecture",
             "locator": "README.md:Architecture",
-            "observed_at": "2026-07-15T00:50:02.508411Z",
+            "observed_at": "2026-07-16T21:10:56.691202Z",
             "reference": "README.md",
             "source": "repository",
             "supports": []
@@ -568,7 +568,7 @@
             "content": "# pytest fixtures\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n estable enlazada en el manifest.\n\n## Contexto expl\u00edcito para tests\n\nUna fixture proporciona contexto confiable y repetible para un test. Se define\ncon `@pytest.fixture` y se solicita declarando su nombre como argumento del test\no de otra fixture.\n\n```python\nimport pytest\n\n@pytest.fixture\ndef sample_items() -> list[str]:\n    return [\"one\", \"two\"]\n\ndef test_items(sample_items: list[str]) -> None:\n    assert len(sample_items) == 2\n```\n\n## Alcance y limpieza\n\nLas fixtures pueden tener alcance de funci\u00f3n, clase, m\u00f3dulo, paquete o sesi\u00f3n.\nUna fixture con `yield` puede ejecutar la limpieza despu\u00e9s del test. Las\ndependencias expl\u00edcitas entre fixtures permiten que pytest determine el orden de\npreparaci\u00f3n.",
             "evidence_id": "rag-b0eb7a7300d324dff24c8147be2209c10a2e290307646cf55ded291a25551f6b",
             "locator": "pytest - Fixtures > pytest fixtures > Alcance y limpieza > chunk 0",
-            "observed_at": "2026-07-15T00:50:02.509120Z",
+            "observed_at": "2026-07-16T21:10:56.691992Z",
             "reference": "https://docs.pytest.org/en/stable/how-to/fixtures.html",
             "source": "rag",
             "supports": []
@@ -579,7 +579,7 @@
             "content": "# FastAPI dependencies\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n oficial enlazada en el manifest.\n\n## Declaraci\u00f3n con Depends\n\nUna dependencia de FastAPI es un callable. La operaci\u00f3n declara que depende de\nese callable usando `Depends`; FastAPI lo ejecuta y entrega su resultado al\npar\u00e1metro correspondiente. Para Python moderno, la documentaci\u00f3n recomienda\nconservar la anotaci\u00f3n de tipo mediante `Annotated`.\n\n```python\nfrom typing import Annotated\n\nfrom fastapi import Depends, FastAPI\n\napp = FastAPI()\n\ndef common_parameters(limit: int = 20) -> dict[str, int]:\n    return {\"limit\": limit}\n\n@app.get(\"/items\")\ndef list_items(params: Annotated[dict[str, int], Depends(common_parameters)]):\n    return params\n```\n\n## Composici\u00f3n\n\nLas dependencias pueden declarar subdependencias. FastAPI resuelve esa jerarqu\u00eda\ny reutiliza dentro de la misma request los resultados cacheados por defecto.\nTambi\u00e9n integra las declaraciones de dependencias en el esquema OpenAPI.",
             "evidence_id": "rag-cdae1ce66ce842b0ee704f032bf5aa077d29a97ef5b68e8a109f1c71f3011ad9",
             "locator": "FastAPI - Dependencies > FastAPI dependencies > Composici\u00f3n > chunk 0",
-            "observed_at": "2026-07-15T00:50:02.509124Z",
+            "observed_at": "2026-07-16T21:10:56.691996Z",
             "reference": "https://fastapi.tiangolo.com/tutorial/dependencies/",
             "source": "rag",
             "supports": []
@@ -590,7 +590,7 @@
             "content": "# Pydantic models\n\nPar\u00e1frasis reproducible de la documentaci\u00f3n oficial enlazada en el manifest.\n\n## Validaci\u00f3n\n\nUn modelo hereda de `BaseModel` y declara campos mediante anotaciones. Pydantic\nvalida los datos de entrada y construye una instancia que respeta los tipos y\nrestricciones declarados.\n\n```python\nfrom pydantic import BaseModel, Field\n\nclass User(BaseModel):\n    name: str\n    age: int = Field(ge=0)\n```\n\n## Serializaci\u00f3n y configuraci\u00f3n\n\n`model_dump()` produce datos Python y `model_dump_json()` produce JSON. La\nconfiguraci\u00f3n del modelo permite, entre otras pol\u00edticas, rechazar campos extra o\nhacer instancias inmutables. Una inferencia del agente no debe confundirse con\nun hecho validado solo porque fue expresada mediante un modelo.",
             "evidence_id": "rag-6d3ec900ab1651a4524df411bc8fdf6749713f33c50fa8a87078aa667adcacb3",
             "locator": "Pydantic - Models > Pydantic models > Serializaci\u00f3n y configuraci\u00f3n > chunk 0",
-            "observed_at": "2026-07-15T00:50:02.509129Z",
+            "observed_at": "2026-07-16T21:10:56.691999Z",
             "reference": "https://pydantic.dev/docs/validation/latest/concepts/models/",
             "source": "rag",
             "supports": []
@@ -636,7 +636,7 @@
       "targeted test",
       "review"
     ],
-    "created_at": "2026-07-15T00:50:02.495813Z",
+    "created_at": "2026-07-16T21:10:56.679568Z",
     "max_replans": 1,
     "original_request": "Analiz\u00e1 este repositorio FastAPI y agreg\u00e1 GET /health/ready. Consult\u00e1 el RAG, mostr\u00e1 fuentes, agreg\u00e1 tests y revis\u00e1 el diff.",
     "project_id": "fastapi-demo",
@@ -666,7 +666,7 @@
       "output_digest": "14cbc312c2d79540334d91191b8b4f0bf97653cb8ef0cf2eeb98ae185adec517",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.508433Z",
+      "started_at": "2026-07-16T21:10:56.691214Z",
       "status": "executed",
       "tool_name": "list_files"
     },
@@ -683,7 +683,7 @@
       "output_digest": "bdf16a4390ec18faac1756ed7a1d7a7674bffa443cdfe6af938140dc1d348caa",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.508440Z",
+      "started_at": "2026-07-16T21:10:56.691221Z",
       "status": "executed",
       "tool_name": "read_file"
     },
@@ -700,7 +700,7 @@
       "output_digest": "6513d94c31a0112f85665b6f65b38ce1e4d4bd603233674a31a62b152723eee3",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.508444Z",
+      "started_at": "2026-07-16T21:10:56.691225Z",
       "status": "executed",
       "tool_name": "read_file"
     },
@@ -717,7 +717,7 @@
       "output_digest": "6c8877b094cfb46c7a33583d6957be82e685678368701b0a0dbe157b61792d4d",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.513002Z",
+      "started_at": "2026-07-16T21:10:56.695556Z",
       "status": "executed",
       "tool_name": "write_file"
     },
@@ -734,7 +734,7 @@
       "output_digest": "3920cd1ab6e1f1f893f9afafa0a26925b6148372ae03b54997f5c8fca5893a38",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.516296Z",
+      "started_at": "2026-07-16T21:10:56.698524Z",
       "status": "executed",
       "tool_name": "write_file"
     },
@@ -751,7 +751,7 @@
       "output_digest": "c4748468a9dea8f314e431bc8b756d227496912696f42860503faea7594ba0f0",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.519534Z",
+      "started_at": "2026-07-16T21:10:56.701452Z",
       "status": "executed",
       "tool_name": "write_file"
     },
@@ -773,7 +773,7 @@
       "output_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.883988Z",
+      "started_at": "2026-07-16T21:10:56.941687Z",
       "status": "executed",
       "tool_name": "run_command"
     },
@@ -795,7 +795,7 @@
       "output_digest": "4bcefcc9f6c645923b9993ccf73ad92e6b400ca25458ea14e095857fc2131342",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.883997Z",
+      "started_at": "2026-07-16T21:10:56.941702Z",
       "status": "executed",
       "tool_name": "run_command"
     }

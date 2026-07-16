@@ -75,6 +75,26 @@ def test_default_registry_contains_seven_structured_tools() -> None:
         assert tool.spec.permissions.allowed_roles
 
 
+def test_default_tool_schemas_are_openai_strict_compatible() -> None:
+    registry = build_default_registry()
+
+    for tool in registry.all():
+        definition = tool.spec.definition
+        assert definition.strict is True
+        _assert_strict_objects(definition.parameters)
+
+    read_schema = registry.get("read_file").spec.definition.parameters
+    read_properties = read_schema["properties"]
+    assert isinstance(read_properties, dict)
+    start_line = read_properties["start_line"]
+    assert isinstance(start_line, dict)
+    assert "default" not in start_line
+    assert {variant.get("type") for variant in start_line["anyOf"]} == {
+        "integer",
+        "null",
+    }
+
+
 def test_registry_accepts_extension_and_rejects_duplicate() -> None:
     registry = ToolRegistry()
     tool = PluginTool()
@@ -99,3 +119,17 @@ def test_registry_discovers_explicit_entry_point_group(
 
     assert count == 1
     assert registry.get("plugin_tool").spec.definition.name == "plugin_tool"
+
+
+def _assert_strict_objects(value: object) -> None:
+    if isinstance(value, dict):
+        assert "default" not in value
+        properties = value.get("properties")
+        if isinstance(properties, dict):
+            assert value.get("additionalProperties") is False
+            assert value.get("required") == list(properties)
+        for child in value.values():
+            _assert_strict_objects(child)
+    elif isinstance(value, list):
+        for child in value:
+            _assert_strict_objects(child)

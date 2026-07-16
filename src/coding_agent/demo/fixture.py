@@ -14,6 +14,19 @@ class FixtureResetError(Exception):
     code = "fixture_reset_error"
 
 
+_GENERATED_NAMES = frozenset(
+    {
+        ".coverage",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+        ".venv",
+        "__pycache__",
+        "venv",
+    }
+)
+
+
 @dataclass(frozen=True, slots=True)
 class FixtureSnapshot:
     workspace: Path
@@ -46,7 +59,12 @@ class FixtureResetter:
         staging = self._runtime / f".{name}.staging-{nonce}"
         backup = self._runtime / f".{name}.backup-{nonce}"
         try:
-            shutil.copytree(self._seed, staging, symlinks=False)
+            shutil.copytree(
+                self._seed,
+                staging,
+                symlinks=False,
+                ignore=_ignore_generated,
+            )
             if destination.exists():
                 os.replace(destination, backup)
             os.replace(staging, destination)
@@ -71,7 +89,7 @@ def snapshot(root: str | Path) -> FixtureSnapshot:
     for path in sorted(canonical.rglob("*")):
         if path.is_symlink():
             raise FixtureResetError("Fixture snapshots reject symlinks.")
-        if not path.is_file() or "__pycache__" in path.parts:
+        if not path.is_file() or _is_generated(path, canonical):
             continue
         relative = path.relative_to(canonical).as_posix()
         files.append(relative)
@@ -81,3 +99,18 @@ def snapshot(root: str | Path) -> FixtureSnapshot:
         digest.update(b"\0")
     return FixtureSnapshot(workspace=canonical, checksum=digest.hexdigest(), files=tuple(files))
 
+
+def _ignore_generated(_directory: str, names: list[str]) -> set[str]:
+    return {
+        name
+        for name in names
+        if name in _GENERATED_NAMES
+        or name.endswith((".egg-info", ".pyc", ".pyo"))
+    }
+
+
+def _is_generated(path: Path, root: Path) -> bool:
+    relative = path.relative_to(root)
+    return any(part in _GENERATED_NAMES for part in relative.parts) or path.name.endswith(
+        (".egg-info", ".pyc", ".pyo")
+    )

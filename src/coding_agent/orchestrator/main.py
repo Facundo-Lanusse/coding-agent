@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from typing import Protocol
 
 from coding_agent.agents import Agent, AgentContext, PriorAgentSummary
+from coding_agent.context import ContextCandidate, ContextKind, ContextManager
 from coding_agent.models import ApprovalDecision, ErrorInfo
 from coding_agent.observability import NoOpTracer, ObservationKind, Tracer
 from coding_agent.state import (
@@ -14,6 +15,7 @@ from coding_agent.state import (
     AgentResultStatus,
     ApprovalRecord,
     Decision,
+    Evidence,
     EvidenceGroup,
     EvidenceSource,
     PendingApproval,
@@ -36,6 +38,11 @@ class Planner(Protocol):
 
     def replan(self, state: TaskState, failed_result: AgentResult) -> tuple[str, ...]:
         """Return a replacement plan after a concrete failed validation."""
+
+
+class InitialEvidenceProvider(Protocol):
+    def load(self, request: TaskRequest) -> tuple[Evidence, ...]:
+        """Load verified project evidence before coordination starts."""
 
 
 class DefaultPlanner:
@@ -93,6 +100,8 @@ class MainAgent:
         planner: Planner | None = None,
         machine: TaskStateMachine | None = None,
         tracer: Tracer | None = None,
+        initial_evidence_provider: InitialEvidenceProvider | None = None,
+        context_manager: ContextManager | None = None,
     ) -> None:
         if frozenset(agents) != _REQUIRED_AGENTS:
             missing = sorted(name.value for name in _REQUIRED_AGENTS.difference(agents))
@@ -107,6 +116,8 @@ class MainAgent:
         self._planner = planner or DefaultPlanner()
         self._machine = machine or TaskStateMachine()
         self._tracer = tracer or NoOpTracer()
+        self._initial_evidence_provider = initial_evidence_provider
+        self._context_manager = context_manager
 
     def run(self, request: TaskRequest) -> TaskState:
         identifiers: dict[str, object] = {
@@ -145,7 +156,16 @@ class MainAgent:
         if not plan or any(not step.strip() for step in plan):
             raise OrchestrationError("Planner returned an empty or invalid plan.")
 
-        state = TaskState(request=request)
+        initial_evidence = (
+            ()
+            if self._initial_evidence_provider is None
+            else self._initial_evidence_provider.load(request)
+        )
+        state = TaskState(
+            request=request,
+            evidence=initial_evidence,
+            sources_consulted=tuple(dict.fromkeys(item.source for item in initial_evidence)),
+        )
         state = self._machine.transition(
             state,
             TaskStatus.PLANNING,
@@ -428,6 +448,27 @@ class MainAgent:
             if result.agent in visible_agents[agent_name]
         )
         evidence = () if agent_name is AgentName.EXPLORER else state.evidence
+        context_included: tuple[str, ...] = ()
+        context_omitted: tuple[str, ...] = ()
+        selected_context: tuple[str, ...] = ()
+        if self._context_manager is not None and agent_name is not AgentName.EXPLORER:
+            selection = self._context_manager.build(
+                query=state.normalized_objective,
+                candidates=_context_candidates(state, evidence),
+            )
+            included_ids = {item.item_id for item in selection.included}
+            evidence = tuple(
+                item
+                for item in evidence
+                if f"evidence:{item.evidence_id}" in included_ids
+            )
+            selected_context = tuple(
+                item.content
+                for item in selection.included
+                if not item.item_id.startswith("evidence:")
+            )
+            context_included = tuple(item.item_id for item in selection.included)
+            context_omitted = tuple(item.candidate.item_id for item in selection.omitted)
         changes = (
             state.files_modified if agent_name in {AgentName.TESTER, AgentName.REVIEWER} else ()
         )
@@ -447,8 +488,13 @@ class MainAgent:
             relevant_files=tuple(str(path) for path in state.files_read),
             file_changes=changes,
             checks=checks,
-            observations=state.observations if agent_name is AgentName.REVIEWER else (),
+            observations=(
+                *(state.observations if agent_name is AgentName.REVIEWER else ()),
+                *selected_context,
+            ),
             errors=state.errors if agent_name in {AgentName.TESTER, AgentName.REVIEWER} else (),
+            context_included=context_included,
+            context_omitted=context_omitted,
         )
 
     @staticmethod
@@ -468,3 +514,46 @@ class MainAgent:
 
 
 Orchestrator = MainAgent
+
+
+def _context_candidates(
+    state: TaskState,
+    evidence: tuple[Evidence, ...],
+) -> tuple[ContextCandidate, ...]:
+    candidates = [
+        ContextCandidate(
+            item_id=f"evidence:{item.evidence_id}",
+            kind=(
+                ContextKind.MEMORY
+                if item.source is EvidenceSource.MEMORY
+                else ContextKind.EVIDENCE
+            ),
+            content=item.content,
+            source_reference=item.reference,
+            relevance=item.confidence,
+            created_at=item.observed_at,
+        )
+        for item in evidence
+    ]
+    candidates.extend(
+        ContextCandidate(
+            item_id=f"decision:{item.decision_id}",
+            kind=ContextKind.DECISION,
+            content=item.reason,
+            source_reference=item.kind,
+            relevance=1.0,
+            created_at=item.made_at,
+        )
+        for item in state.decisions
+    )
+    candidates.extend(
+        ContextCandidate(
+            item_id=f"error:{index}",
+            kind=ContextKind.OPEN_ERROR,
+            content=f"{item.code}: {item.message}",
+            source_reference=item.code,
+            relevance=1.0,
+        )
+        for index, item in enumerate(state.errors)
+    )
+    return tuple(candidates)

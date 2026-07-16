@@ -4,6 +4,7 @@ from collections import deque
 from pathlib import Path
 
 from coding_agent.agents import AgentContext
+from coding_agent.context import ContextBudget, ContextManager
 from coding_agent.models import ApprovalDecision, ErrorInfo, PolicyOutcome, ToolStatus
 from coding_agent.orchestrator import MainAgent
 from coding_agent.state import (
@@ -301,3 +302,35 @@ def test_pending_approval_pauses_then_resumes_without_duplicate_effects() -> Non
     assert completed.approvals[0].approved is True
     assert completed.iterations == 5
     assert [event.event_type for event in completed.events].count("approval_granted") == 1
+
+
+class MemoryEvidenceProvider:
+    def load(self, request: TaskRequest) -> tuple[Evidence, ...]:
+        del request
+        return (
+            Evidence(
+                evidence_id="memory-health-convention",
+                source=EvidenceSource.MEMORY,
+                reference="previous-session",
+                content="Health routers delegate to services.",
+                confidence=0.9,
+            ),
+        )
+
+
+def test_memory_and_context_manager_are_wired_into_agent_context() -> None:
+    mapping, _ = agents()
+    orchestrator = MainAgent(
+        mapping,
+        initial_evidence_provider=MemoryEvidenceProvider(),
+        context_manager=ContextManager(
+            budget=ContextBudget(max_chars=2_000, max_items=10, minimum_relevance=0.0)
+        ),
+    )
+
+    state = orchestrator.run(task())
+
+    researcher_context = mapping[AgentName.RESEARCHER].contexts[0]
+    assert state.evidence[0].source is EvidenceSource.MEMORY
+    assert "evidence:memory-health-convention" in researcher_context.context_included
+    assert any(item.source is EvidenceSource.MEMORY for item in researcher_context.evidence)

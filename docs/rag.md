@@ -130,7 +130,8 @@ valores root de `agent.config.yaml`. Recuperó los tres documentos. Esto prueba
 provenance y orden RAG-before-web (el fake web falla si se llama), pero no prueba
 precision/recall ni que todos los hits sean necesarios para el endpoint.
 
-No hay proveedor web productivo compuesto; sólo puerto, adaptador no disponible
-y fakes. Tampoco se envían los chunks automáticamente a `coding-agent run`, que
-sigue siendo el harness básico.
-
+`coding-agent demo real` compone `TavilyWebSearchProvider`: consulta primero el
+store local y sólo usa web si el threshold o los detalles requeridos no alcanzan.
+Aplica allowlist de dominios oficiales, búsqueda `basic`, sin answer/raw content
+y un máximo de una búsqueda. `coding-agent run` sigue siendo deliberadamente el
+harness básico; el flujo completo vive en el subcomando de demo.

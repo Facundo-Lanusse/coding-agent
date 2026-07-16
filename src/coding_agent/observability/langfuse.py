@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 from collections.abc import Mapping
 from contextlib import AbstractContextManager, suppress
@@ -42,9 +43,27 @@ _KIND_MAP: Mapping[ObservationKind, str] = {
 class LangfuseTracer:
     """Maps project observations to the current Langfuse observation API."""
 
-    def __init__(self, client: LangfuseClient, sanitizer: Sanitizer) -> None:
+    def __init__(
+        self,
+        client: LangfuseClient,
+        sanitizer: Sanitizer,
+        *,
+        trace_id: str | None = None,
+    ) -> None:
         self._client = client
         self._sanitizer = sanitizer
+        self._trace_id = trace_id
+        self._root_claimed = False
+
+    @property
+    def trace_id(self) -> str | None:
+        return self._trace_id
+
+    def claim_trace_context(self) -> dict[str, str] | None:
+        if self._root_claimed or self._trace_id is None:
+            return None
+        self._root_claimed = True
+        return {"trace_id": self._trace_id}
 
     def observe(
         self,
@@ -55,6 +74,7 @@ class LangfuseTracer:
         metadata: dict[str, object] | None = None,
     ) -> LangfuseObservation:
         return LangfuseObservation(
+            tracer=self,
             client=self._client,
             sanitizer=self._sanitizer,
             name=name,
@@ -76,6 +96,7 @@ class LangfuseObservation:
     def __init__(
         self,
         *,
+        tracer: LangfuseTracer,
         client: LangfuseClient,
         sanitizer: Sanitizer,
         name: str,
@@ -83,6 +104,7 @@ class LangfuseObservation:
         input: object | None,
         metadata: dict[str, object],
     ) -> None:
+        self._tracer = tracer
         self._client = client
         self._sanitizer = sanitizer
         self._name = name
@@ -94,13 +116,25 @@ class LangfuseObservation:
 
     def __enter__(self) -> Self:
         try:
-            self._manager = self._client.start_as_current_observation(
-                name=self._name,
-                as_type=_KIND_MAP[self._kind],
-                input=self._sanitizer.content(self._input),
-                metadata=self._sanitizer.sanitize(self._metadata),
-            )
+            sanitized_metadata = self._sanitizer.sanitize(self._metadata)
+            metadata = sanitized_metadata if isinstance(sanitized_metadata, dict) else {}
+            arguments: dict[str, object] = {
+                "name": self._name,
+                "as_type": _KIND_MAP[self._kind],
+                "input": self._sanitizer.content(self._input),
+                "metadata": metadata,
+            }
+            trace_context = self._tracer.claim_trace_context()
+            if trace_context is not None:
+                arguments["trace_context"] = trace_context
+            model = metadata.get("model")
+            if self._kind is ObservationKind.GENERATION and isinstance(model, str):
+                arguments["model"] = model
+            self._manager = self._client.start_as_current_observation(**arguments)
             self._remote = self._manager.__enter__()
+            remote_trace_id = getattr(self._remote, "trace_id", None)
+            if isinstance(remote_trace_id, str) and remote_trace_id:
+                self._tracer._trace_id = remote_trace_id
         except Exception:
             self._manager = None
             self._remote = None
@@ -132,7 +166,16 @@ class LangfuseObservation:
         if output is not None:
             payload["output"] = self._sanitizer.content(output)
         if metadata:
-            payload["metadata"] = self._sanitizer.sanitize(metadata)
+            sanitized = self._sanitizer.sanitize(metadata)
+            safe_metadata = sanitized if isinstance(sanitized, dict) else {}
+            payload["metadata"] = safe_metadata
+            if self._kind is ObservationKind.GENERATION:
+                usage = _usage_details(safe_metadata)
+                if usage:
+                    payload["usage_details"] = usage
+                cost = safe_metadata.get("cost")
+                if isinstance(cost, int | float) and cost >= 0:
+                    payload["cost_details"] = {"total": float(cost)}
         if error is not None:
             payload.update(
                 {
@@ -151,6 +194,7 @@ def create_tracer(
     *,
     environment: Mapping[str, str] | None = None,
     client: LangfuseClient | None = None,
+    trace_seed: str | None = None,
 ) -> Tracer:
     """Return no-op unless telemetry is enabled and usable."""
 
@@ -174,8 +218,34 @@ def create_tracer(
             client = cast(LangfuseClient, get_client())
         except Exception:
             return NoOpTracer()
-    return LangfuseTracer(client, sanitizer)
+    trace_id = _trace_id(client, trace_seed) if trace_seed is not None else None
+    return LangfuseTracer(client, sanitizer, trace_id=trace_id)
 
 
 def _credentials_present(environment: Mapping[str, str]) -> bool:
     return bool(environment.get("LANGFUSE_PUBLIC_KEY") and environment.get("LANGFUSE_SECRET_KEY"))
+
+
+def _trace_id(client: LangfuseClient, seed: str) -> str:
+    create = getattr(client, "create_trace_id", None)
+    if callable(create):
+        try:
+            value = create(seed=seed)
+            if isinstance(value, str) and len(value) == 32:
+                return value
+        except Exception:
+            pass
+    return hashlib.sha256(seed.encode()).hexdigest()[:32]
+
+
+def _usage_details(metadata: Mapping[str, object]) -> dict[str, int]:
+    pairs = {
+        "input": metadata.get("input_tokens"),
+        "output": metadata.get("output_tokens"),
+        "total": metadata.get("total_tokens"),
+    }
+    return {
+        key: value
+        for key, value in pairs.items()
+        if isinstance(value, int) and value >= 0
+    }

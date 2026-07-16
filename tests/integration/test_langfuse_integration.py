@@ -25,8 +25,9 @@ def test_real_langfuse_trace_can_be_flushed() -> None:
         capture_content=False,
         max_payload_chars=2_000,
     )
-    tracer = create_tracer(config)
+    tracer = create_tracer(config, trace_seed="coding-agent-integration-smoke")
     assert not isinstance(tracer, NoOpTracer)
+    assert tracer.trace_id is not None
 
     with tracer.observe(
         "coding-agent.integration-smoke",
@@ -36,4 +37,3 @@ def test_real_langfuse_trace_can_be_flushed() -> None:
     ) as observation:
         observation.update(output={"status": "completed"})
     tracer.flush()
-

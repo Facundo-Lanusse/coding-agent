@@ -129,7 +129,7 @@ class StructuredTool(ABC, Generic[ParametersT]):
             definition=ToolDefinition(
                 name=name,
                 description=description,
-                parameters=parameters_model.model_json_schema(),
+                parameters=_strict_json_schema(parameters_model.model_json_schema()),
             ),
             permissions=permissions,
         )
@@ -156,3 +156,38 @@ class StructuredTool(ABC, Generic[ParametersT]):
     @abstractmethod
     def _execute(self, context: ToolContext, parameters: ParametersT) -> ToolExecution:
         """Implement the effect behind the policy gateway."""
+
+
+def _strict_json_schema(schema: dict[str, object]) -> dict[str, object]:
+    """Return an OpenAI strict-mode compatible copy of a Pydantic JSON schema.
+
+    Strict function tools require every property to be listed as required and
+    every object to reject additional properties. Nullable Pydantic fields keep
+    their ``null`` variant, so callers can still express the absence of a value.
+    """
+
+    normalized: dict[str, object] = {}
+    for key, value in schema.items():
+        if key == "default":
+            continue
+        normalized[key] = _normalize_schema_value(value)
+
+    properties = normalized.get("properties")
+    if isinstance(properties, dict):
+        normalized["required"] = list(properties)
+    if normalized.get("type") == "object":
+        normalized["additionalProperties"] = False
+    return normalized
+
+
+def _normalize_schema_value(value: object) -> object:
+    if isinstance(value, dict):
+        schema: dict[str, object] = {}
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise TypeError("JSON schema keys must be strings.")
+            schema[key] = item
+        return _strict_json_schema(schema)
+    if isinstance(value, list):
+        return [_normalize_schema_value(item) for item in value]
+    return value

@@ -15,7 +15,7 @@
           "content": "Routers delegate to services; services construct typed responses.",
           "evidence_id": "memory_session_1-repo-architecture",
           "locator": "README.md:Architecture",
-          "observed_at": "2026-07-15T00:50:02.920060Z",
+          "observed_at": "2026-07-16T21:11:35.786712Z",
           "reference": "README.md",
           "source": "repository",
           "supports": []
@@ -47,7 +47,7 @@
           "output_digest": "14cbc312c2d79540334d91191b8b4f0bf97653cb8ef0cf2eeb98ae185adec517",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.920080Z",
+          "started_at": "2026-07-16T21:11:35.786725Z",
           "status": "executed",
           "tool_name": "list_files"
         },
@@ -64,7 +64,7 @@
           "output_digest": "bdf16a4390ec18faac1756ed7a1d7a7674bffa443cdfe6af938140dc1d348caa",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.920086Z",
+          "started_at": "2026-07-16T21:11:35.786732Z",
           "status": "executed",
           "tool_name": "read_file"
         },
@@ -81,7 +81,7 @@
           "output_digest": "6513d94c31a0112f85665b6f65b38ce1e4d4bd603233674a31a62b152723eee3",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.920090Z",
+          "started_at": "2026-07-16T21:11:35.786736Z",
           "status": "executed",
           "tool_name": "read_file"
         }
@@ -177,7 +177,7 @@
           "output_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.961761Z",
+          "started_at": "2026-07-16T21:11:35.826479Z",
           "status": "executed",
           "tool_name": "run_command"
         }
@@ -219,7 +219,7 @@
       "actor": "main",
       "event_type": "plan_created",
       "from_status": "received",
-      "occurred_at": "2026-07-15T00:50:02.907252Z",
+      "occurred_at": "2026-07-16T21:11:35.774909Z",
       "payload": {},
       "revision": 1,
       "sequence": 1,
@@ -229,7 +229,7 @@
       "actor": "main",
       "event_type": "execution_started",
       "from_status": "planning",
-      "occurred_at": "2026-07-15T00:50:02.907264Z",
+      "occurred_at": "2026-07-16T21:11:35.774924Z",
       "payload": {},
       "revision": 2,
       "sequence": 2,
@@ -239,7 +239,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "exploring",
-      "occurred_at": "2026-07-15T00:50:02.920345Z",
+      "occurred_at": "2026-07-16T21:11:35.787178Z",
       "payload": {
         "agent": "explorer"
       },
@@ -251,7 +251,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "researching",
-      "occurred_at": "2026-07-15T00:50:02.920510Z",
+      "occurred_at": "2026-07-16T21:11:35.787336Z",
       "payload": {
         "agent": "researcher"
       },
@@ -263,7 +263,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "implementing",
-      "occurred_at": "2026-07-15T00:50:02.920647Z",
+      "occurred_at": "2026-07-16T21:11:35.787473Z",
       "payload": {
         "agent": "implementer"
       },
@@ -275,7 +275,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "testing",
-      "occurred_at": "2026-07-15T00:50:02.962130Z",
+      "occurred_at": "2026-07-16T21:11:35.826866Z",
       "payload": {
         "agent": "tester"
       },
@@ -287,7 +287,7 @@
       "actor": "main",
       "event_type": "task_completed",
       "from_status": "reviewing",
-      "occurred_at": "2026-07-15T00:50:02.962486Z",
+      "occurred_at": "2026-07-16T21:11:35.827241Z",
       "payload": {},
       "revision": 7,
       "sequence": 7,
@@ -301,7 +301,7 @@
       "content": "Routers delegate to services; services construct typed responses.",
       "evidence_id": "memory_session_1-repo-architecture",
       "locator": "README.md:Architecture",
-      "observed_at": "2026-07-15T00:50:02.920060Z",
+      "observed_at": "2026-07-16T21:11:35.786712Z",
       "reference": "README.md",
       "source": "repository",
       "supports": []
@@ -322,7 +322,7 @@
             "content": "Routers delegate to services; services construct typed responses.",
             "evidence_id": "memory_session_1-repo-architecture",
             "locator": "README.md:Architecture",
-            "observed_at": "2026-07-15T00:50:02.920060Z",
+            "observed_at": "2026-07-16T21:11:35.786712Z",
             "reference": "README.md",
             "source": "repository",
             "supports": []
@@ -374,7 +374,7 @@
       "convention persisted",
       "test command persisted"
     ],
-    "created_at": "2026-07-15T00:50:02.907191Z",
+    "created_at": "2026-07-16T21:11:35.774645Z",
     "max_replans": 1,
     "original_request": "Analiz\u00e1 el proyecto y guard\u00e1 arquitectura, convenciones, comandos de test y archivos principales.",
     "project_id": "fastapi-demo",
@@ -403,7 +403,7 @@
       "output_digest": "14cbc312c2d79540334d91191b8b4f0bf97653cb8ef0cf2eeb98ae185adec517",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.920080Z",
+      "started_at": "2026-07-16T21:11:35.786725Z",
       "status": "executed",
       "tool_name": "list_files"
     },
@@ -420,7 +420,7 @@
       "output_digest": "bdf16a4390ec18faac1756ed7a1d7a7674bffa443cdfe6af938140dc1d348caa",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.920086Z",
+      "started_at": "2026-07-16T21:11:35.786732Z",
       "status": "executed",
       "tool_name": "read_file"
     },
@@ -437,7 +437,7 @@
       "output_digest": "6513d94c31a0112f85665b6f65b38ce1e4d4bd603233674a31a62b152723eee3",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.920090Z",
+      "started_at": "2026-07-16T21:11:35.786736Z",
       "status": "executed",
       "tool_name": "read_file"
     },
@@ -459,7 +459,7 @@
       "output_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.961761Z",
+      "started_at": "2026-07-16T21:11:35.826479Z",
       "status": "executed",
       "tool_name": "run_command"
     }

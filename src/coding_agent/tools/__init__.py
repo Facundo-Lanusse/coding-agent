@@ -21,11 +21,19 @@ from coding_agent.tools.registry import (
     UnknownToolError,
     build_default_registry,
 )
+from coding_agent.tools.tavily import (
+    TavilyConfigurationError,
+    TavilySearchBudgetError,
+    TavilyWebSearchProvider,
+)
 
 __all__ = [
     "DuplicateToolError",
     "PermissionKind",
     "StructuredTool",
+    "TavilyConfigurationError",
+    "TavilySearchBudgetError",
+    "TavilyWebSearchProvider",
     "Tool",
     "ToolContext",
     "ToolDiscoveryError",

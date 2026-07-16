@@ -1,6 +1,6 @@
 # Checklist final de entrega
 
-Actualizado en la auditoría de Fase 09 del 2026-07-14. `[x]` significa
+Actualizado tras la integración real autorizada del 2026-07-16. `[x]` significa
 evidencia local inspeccionada o comando ejecutado; `[ ]` identifica una acción
 humana o un gate no satisfecho.
 
@@ -13,7 +13,10 @@ humana o un gate no satisfecho.
 - [x] Fuentes, chunking, embeddings y SQLite vector store documentados.
 - [x] Cuatro bundles de evidencia para A, B1/B2 y C con schema 1.0.
 - [x] Reflexión basada en artifacts y resultados observados.
-- [ ] Ejecución multiagente real registrada en Langfuse con trace id.
+- [x] Ejecución multiagente real completa registrada con trace id
+  `8248244a2224f1dc099fff1240e5c040`.
+- [x] Seis diagnósticos y una ejecución completa preservados; la última alcanzó
+  los cinco roles, tests exitosos y Reviewer.
 - [ ] Captura real de una traza completa en `docs/evidence/screenshots/`.
 
 ## Reproducibilidad
@@ -32,12 +35,12 @@ humana o un gate no satisfecho.
 
 ## Quality gates finales
 
-- [x] Suite completa: 119 passed, 1 skipped, exit 0.
-- [x] Coverage: 87% global, por encima del mínimo planificado de 85%.
-- [ ] Cobertura crítica de 90%: `orchestrator/main.py` queda en 83% y módulos
+- [x] Suite completa offline: 142 passed, 1 skipped, exit 0.
+- [x] Coverage: 85% global, alcanza el mínimo planificado de 85%.
+- [ ] Cobertura crítica de 90%: `orchestrator/main.py` queda en 85% y módulos
   de policy quedan entre 62% y 89%.
 - [x] Ruff sobre `src tests examples`: exit 0.
-- [x] mypy sobre `src tests`: exit 0, 94 archivos.
+- [x] mypy sobre `src tests`: exit 0, 101 archivos.
 - [x] Build de wheel/sdist: exit 0.
 - [x] Instalación limpia del wheel y ayudas CLI: exit 0.
 - [x] Demos deterministas e inspección de los cuatro artifacts: exit 0.
@@ -56,15 +59,17 @@ humana o un gate no satisfecho.
 
 ## Acciones humanas pendientes
 
-- [ ] Aprobar o rechazar agregar la dependencia runtime `langfuse`.
-- [ ] Proveer `OPENAI_API_KEY`, `LANGFUSE_PUBLIC_KEY` y
-  `LANGFUSE_SECRET_KEY`; configurar `LANGFUSE_BASE_URL` sólo si corresponde.
-- [ ] Aprobar el costo y completar/conectar una ejecución real OpenAI con los
-  cinco subagentes; `demo real` hoy declara que no está implementada.
-- [ ] Ejecutar la tarea real, revisar sanitización y registrar el trace id.
+- [x] Langfuse y Tavily agregados/instalados con autorización explícita.
+- [x] Composición real OpenAI con los cinco subagentes implementada y protegida
+  por límites/`--confirm-cost`.
+- [x] Variables reales cargadas por el usuario sin copiarlas a la entrega.
+- [x] Reejecución real completada con entorno demo en `PATH`, presupuesto 20 y
+  2400 tokens; Reviewer aceptó y el proceso terminó con exit 0.
+- [x] El usuario mantuvo disponibles en la shell `OPENAI_API_KEY`, `TAVILY_API_KEY`,
+  `LANGFUSE_PUBLIC_KEY` y `LANGFUSE_SECRET_KEY`; no copiar sus valores a docs.
 - [ ] Tomar las capturas mediante `docs/evidence/screenshots/README.md`.
-- [ ] Decidir si se empaqueta el seed demo dentro del wheel o se documenta el
-  checkout como requisito operativo definitivo.
+- [x] Decisión de distribución: el seed demo permanece bajo `examples/` y las
+  demos se ejecutan desde el checkout; no se infla el wheel con una fixture.
 - [ ] Decidir si el umbral crítico de cobertura se mantiene en 90% y, en ese
   caso, agregar tests dirigidos sin ampliar funcionalidades.
 - [ ] Autorizar dependencias FastAPI del demo si se quieren ejecutar sus tests
@@ -72,11 +77,11 @@ humana o un gate no satisfecho.
 
 ## Dictamen
 
-La entrega queda `PARTIAL`: 36/44 requisitos están `PASS`, cinco `PARTIAL`,
-tres requieren acción humana y ninguno queda `FAIL` en la matriz funcional.
+La entrega queda `PARTIAL`: 39/44 requisitos están `PASS`, dos `PARTIAL`, tres
+requieren acción humana y ninguno queda `FAIL` en la matriz funcional.
 Los dos gates internos no satisfechos son la cobertura crítica de 90% y la demo
-standalone desde el wheel. R29/R35/R43 no pueden cerrarse sin Langfuse real y
-capturas humanas.
+standalone desde el wheel. R29/R35/R43 no pueden cerrarse sin ejecutar Langfuse
+real y tomar capturas humanas.
 
 ## Preparación posterior para GitHub
 
@@ -88,5 +93,6 @@ capturas humanas.
 - [x] Compose pasa sólo variables explícitas y aplica root filesystem read-only,
   `/tmp` efímero, `no-new-privileges` y cero capabilities Linux.
 - [x] `.python-version` fija Python 3.11 como referencia mínima.
-- [ ] Build Docker no ejecutado: Docker no está disponible en el host auditado.
+- [ ] Revalidar el build Docker después de agregar Langfuse/Tavily si se usará
+  como método de entrega; para la demo real se recomienda el `.venv` local.
 - [ ] Elegir licencia antes de publicar si se desea permitir reutilización.

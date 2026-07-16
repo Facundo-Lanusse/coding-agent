@@ -93,12 +93,12 @@ flowchart TB
 | `policies` | Recargar config, autorizar rol/recurso/comando, pedir aprobación y redactar. | La aprobación no amplía el set de tools del rol. |
 | `state` | Modelos de tarea y grafo de transiciones append-only. | Los agentes no reciben ni mutan `TaskState`. |
 | `agents` | Responsabilidad, contrato de resultado y toolbox acotada por rol. | La lógica concreta está en un `AgentBackend` inyectado. |
-| `orchestrator` | Plan, secuencia de roles, acumulación, aprobación, replan y terminales. | No carga memoria/RAG ni llama SDKs directamente. |
+| `orchestrator` | Plan, secuencia de roles, acumulación, contexto, aprobación, replan y terminales. | Consume puertos; no llama SDKs directamente. |
 | `memory` | Repository SQLite por proyecto, búsqueda lexical, freshness y provenance. | No convierte automáticamente texto del modelo en hecho. |
-| `context` | Selección presupuestada, resumen mediante puerto y detección de no-progreso. | `ContextManager` aún no está compuesto dentro de `MainAgent`. |
-| `rag` | Loaders, chunking, embeddings, store, retrieval y RAG-first/web fallback. | No incluye un proveedor web real por defecto. |
+| `context` | Selección presupuestada, resumen mediante puerto y detección de no-progreso. | Expone qué se incluyó/omitió y no recibe el repositorio completo. |
+| `rag` | Loaders, chunking, embeddings, store, retrieval y RAG-first/web fallback. | Tavily se habilita sólo en la demo real y con presupuesto propio. |
 | `observability` | Puerto, sanitización, no-op, recording y adaptador Langfuse opcional. | Nunca modifica el resultado funcional ante una falla. |
-| `demo` | Reset seguro, escenarios deterministas, review de scope y artifacts. | No representa generación autónoma ni tracing Langfuse real. |
+| `demo` | Reset seguro, escenarios deterministas y composición real acotada. | La corrida real exige credenciales y confirmación explícita de costo. |
 
 ## Roles y contexto
 
@@ -248,9 +248,9 @@ Cada señal elige `change_strategy`, `replan`, `stop`, `ask_help` o
 `request_evidence_or_permission`, e indica si la próxima ejecución está
 permitida. Evidencia o cambios nuevos reinician contadores.
 
-La clase está probada de forma aislada. La demo C integra la señal de error
-repetido con un replan; `MainAgent` genérico no instancia automáticamente el
-detector. Más detalle en
+La demo C integra la señal de error repetido con un replan. El backend OpenAI
+real instancia el detector por rol, bloquea antes de una tercera acción igual y
+envía `loop.no_progress` al tracer compartido. Más detalle en
 [`context_and_loop_detection.md`](context_and_loop_detection.md).
 
 ## Persistencia y observabilidad
@@ -259,11 +259,12 @@ detector. Más detalle en
 - vectores: `data/vector_store/vectors.sqlite3` según configuración;
 - artifacts de demo: `docs/evidence/runs/<run_id>`;
 - observabilidad: no-op si está deshabilitada/no configurada; recording en
-  demos/tests; Langfuse sólo con SDK y credenciales.
+  demos/tests; Langfuse en `demo real` con SDK, credenciales y trace id.
 
-Antes de persistir un artifact, el writer sustituye el workspace y el
-intérprete locales por `${WORKSPACE}` y `${PYTHON}`. Esto afecta sólo la
+Antes de persistir un artifact, el writer sustituye workspace, intérprete y
+home locales por `${WORKSPACE}`, `${PYTHON}` y `${HOME}`. Esto afecta sólo la
 representación entregable, no el comando que efectivamente se ejecuta.
 
-Los artifacts entregados no son trazas Langfuse. Su `trace_id` es `null` y esa
-ausencia permanece como acción humana pendiente.
+Los artifacts deterministas entregados no son trazas Langfuse. Su `trace_id` es
+`null`. La ejecución real completa `real-openai-20260716-231650` tiene trace id
+`8248244a2224f1dc099fff1240e5c040`, tests exitosos y Reviewer aprobado.

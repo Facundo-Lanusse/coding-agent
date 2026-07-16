@@ -223,4 +223,7 @@ def _cosine(left: Sequence[float], right: Sequence[float]) -> float:
     dot = sum(a * b for a, b in zip(left, right, strict=True))
     left_norm = math.sqrt(sum(value * value for value in left))
     right_norm = math.sqrt(sum(value * value for value in right))
-    return 0.0 if left_norm == 0.0 or right_norm == 0.0 else dot / (left_norm * right_norm)
+    if left_norm == 0.0 or right_norm == 0.0:
+        return 0.0
+    score = dot / (left_norm * right_norm)
+    return max(-1.0, min(1.0, score))

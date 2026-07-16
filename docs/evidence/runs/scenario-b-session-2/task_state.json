@@ -15,7 +15,7 @@
           "content": "Routers delegate to services; services construct typed responses.",
           "evidence_id": "memory_session_2-repo-architecture",
           "locator": "README.md:Architecture",
-          "observed_at": "2026-07-15T00:50:02.992844Z",
+          "observed_at": "2026-07-16T21:11:35.852901Z",
           "reference": "README.md",
           "source": "repository",
           "supports": []
@@ -47,7 +47,7 @@
           "output_digest": "a653a35b1c4cfa546afe481e7eb64ca7e16bdadb112c44732a5e1666828b75a2",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.992859Z",
+          "started_at": "2026-07-16T21:11:35.852912Z",
           "status": "executed",
           "tool_name": "list_files"
         },
@@ -64,7 +64,7 @@
           "output_digest": "bdf16a4390ec18faac1756ed7a1d7a7674bffa443cdfe6af938140dc1d348caa",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.992864Z",
+          "started_at": "2026-07-16T21:11:35.852917Z",
           "status": "executed",
           "tool_name": "read_file"
         },
@@ -81,7 +81,7 @@
           "output_digest": "6513d94c31a0112f85665b6f65b38ce1e4d4bd603233674a31a62b152723eee3",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.992867Z",
+          "started_at": "2026-07-16T21:11:35.852920Z",
           "status": "executed",
           "tool_name": "read_file"
         }
@@ -102,7 +102,7 @@
           "content": "FastAPI app uses app/main.py, routers, services, schemas and core configuration.",
           "evidence_id": "memory-architecture",
           "locator": null,
-          "observed_at": "2026-07-15T00:50:02.975272Z",
+          "observed_at": "2026-07-16T21:11:35.837867Z",
           "reference": "README.md#Architecture",
           "source": "memory",
           "supports": []
@@ -113,7 +113,7 @@
           "content": "Routers stay thin and delegate to services; services construct response schemas.",
           "evidence_id": "memory-convention",
           "locator": null,
-          "observed_at": "2026-07-15T00:50:02.975276Z",
+          "observed_at": "2026-07-16T21:11:35.837871Z",
           "reference": "README.md#Convention",
           "source": "memory",
           "supports": []
@@ -124,7 +124,7 @@
           "content": "Run python -m pytest -q for the installed FastAPI project.",
           "evidence_id": "memory-test-command",
           "locator": null,
-          "observed_at": "2026-07-15T00:50:02.975279Z",
+          "observed_at": "2026-07-16T21:11:35.837873Z",
           "reference": "README.md#Commands",
           "source": "memory",
           "supports": []
@@ -135,7 +135,7 @@
           "content": "app/main.py is the application factory and router composition root.",
           "evidence_id": "memory-main-file",
           "locator": null,
-          "observed_at": "2026-07-15T00:50:02.975281Z",
+          "observed_at": "2026-07-16T21:11:35.837874Z",
           "reference": "app/main.py",
           "source": "memory",
           "supports": []
@@ -206,7 +206,7 @@
           "output_digest": "9108ce3e1ab5833340e9d59b78408d8d27864a14e6119ed927c7f40aba198046",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:02.997586Z",
+          "started_at": "2026-07-16T21:11:35.856536Z",
           "status": "executed",
           "tool_name": "write_file"
         },
@@ -223,7 +223,7 @@
           "output_digest": "0195a390c589b79d922d6ce44d88cc9f5a55b92c0df4df1fafa2c7a4ad14b500",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:03.002421Z",
+          "started_at": "2026-07-16T21:11:35.859749Z",
           "status": "executed",
           "tool_name": "write_file"
         },
@@ -240,7 +240,7 @@
           "output_digest": "ffb9385e1c544b8ac940677936baf9a4520028e3e74e7e02a6f62c1ae4a53d12",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:03.010688Z",
+          "started_at": "2026-07-16T21:11:35.862878Z",
           "status": "executed",
           "tool_name": "write_file"
         }
@@ -322,7 +322,7 @@
           "output_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:03.374749Z",
+          "started_at": "2026-07-16T21:11:36.099518Z",
           "status": "executed",
           "tool_name": "run_command"
         },
@@ -344,7 +344,7 @@
           "output_digest": "4bcefcc9f6c645923b9993ccf73ad92e6b400ca25458ea14e095857fc2131342",
           "output_truncated": false,
           "policy_outcome": "allowed",
-          "started_at": "2026-07-15T00:50:03.374759Z",
+          "started_at": "2026-07-16T21:11:36.099531Z",
           "status": "executed",
           "tool_name": "run_command"
         }
@@ -393,7 +393,7 @@
       "actor": "main",
       "event_type": "plan_created",
       "from_status": "received",
-      "occurred_at": "2026-07-15T00:50:02.977070Z",
+      "occurred_at": "2026-07-16T21:11:35.839613Z",
       "payload": {},
       "revision": 1,
       "sequence": 1,
@@ -403,7 +403,7 @@
       "actor": "main",
       "event_type": "execution_started",
       "from_status": "planning",
-      "occurred_at": "2026-07-15T00:50:02.977081Z",
+      "occurred_at": "2026-07-16T21:11:35.839622Z",
       "payload": {},
       "revision": 2,
       "sequence": 2,
@@ -413,7 +413,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "exploring",
-      "occurred_at": "2026-07-15T00:50:02.993072Z",
+      "occurred_at": "2026-07-16T21:11:35.853097Z",
       "payload": {
         "agent": "explorer"
       },
@@ -425,7 +425,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "researching",
-      "occurred_at": "2026-07-15T00:50:02.993319Z",
+      "occurred_at": "2026-07-16T21:11:35.853311Z",
       "payload": {
         "agent": "researcher"
       },
@@ -437,7 +437,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "implementing",
-      "occurred_at": "2026-07-15T00:50:03.011054Z",
+      "occurred_at": "2026-07-16T21:11:35.863166Z",
       "payload": {
         "agent": "implementer"
       },
@@ -449,7 +449,7 @@
       "actor": "main",
       "event_type": "agent_completed",
       "from_status": "testing",
-      "occurred_at": "2026-07-15T00:50:03.375194Z",
+      "occurred_at": "2026-07-16T21:11:36.099904Z",
       "payload": {
         "agent": "tester"
       },
@@ -461,7 +461,7 @@
       "actor": "main",
       "event_type": "task_completed",
       "from_status": "reviewing",
-      "occurred_at": "2026-07-15T00:50:03.375812Z",
+      "occurred_at": "2026-07-16T21:11:36.100518Z",
       "payload": {},
       "revision": 7,
       "sequence": 7,
@@ -475,7 +475,7 @@
       "content": "Routers delegate to services; services construct typed responses.",
       "evidence_id": "memory_session_2-repo-architecture",
       "locator": "README.md:Architecture",
-      "observed_at": "2026-07-15T00:50:02.992844Z",
+      "observed_at": "2026-07-16T21:11:35.852901Z",
       "reference": "README.md",
       "source": "repository",
       "supports": []
@@ -486,7 +486,7 @@
       "content": "FastAPI app uses app/main.py, routers, services, schemas and core configuration.",
       "evidence_id": "memory-architecture",
       "locator": null,
-      "observed_at": "2026-07-15T00:50:02.975272Z",
+      "observed_at": "2026-07-16T21:11:35.837867Z",
       "reference": "README.md#Architecture",
       "source": "memory",
       "supports": []
@@ -497,7 +497,7 @@
       "content": "Routers stay thin and delegate to services; services construct response schemas.",
       "evidence_id": "memory-convention",
       "locator": null,
-      "observed_at": "2026-07-15T00:50:02.975276Z",
+      "observed_at": "2026-07-16T21:11:35.837871Z",
       "reference": "README.md#Convention",
       "source": "memory",
       "supports": []
@@ -508,7 +508,7 @@
       "content": "Run python -m pytest -q for the installed FastAPI project.",
       "evidence_id": "memory-test-command",
       "locator": null,
-      "observed_at": "2026-07-15T00:50:02.975279Z",
+      "observed_at": "2026-07-16T21:11:35.837873Z",
       "reference": "README.md#Commands",
       "source": "memory",
       "supports": []
@@ -519,7 +519,7 @@
       "content": "app/main.py is the application factory and router composition root.",
       "evidence_id": "memory-main-file",
       "locator": null,
-      "observed_at": "2026-07-15T00:50:02.975281Z",
+      "observed_at": "2026-07-16T21:11:35.837874Z",
       "reference": "app/main.py",
       "source": "memory",
       "supports": []
@@ -568,7 +568,7 @@
             "content": "Routers delegate to services; services construct typed responses.",
             "evidence_id": "memory_session_2-repo-architecture",
             "locator": "README.md:Architecture",
-            "observed_at": "2026-07-15T00:50:02.992844Z",
+            "observed_at": "2026-07-16T21:11:35.852901Z",
             "reference": "README.md",
             "source": "repository",
             "supports": []
@@ -584,7 +584,7 @@
             "content": "FastAPI app uses app/main.py, routers, services, schemas and core configuration.",
             "evidence_id": "memory-architecture",
             "locator": null,
-            "observed_at": "2026-07-15T00:50:02.975272Z",
+            "observed_at": "2026-07-16T21:11:35.837867Z",
             "reference": "README.md#Architecture",
             "source": "memory",
             "supports": []
@@ -595,7 +595,7 @@
             "content": "Routers stay thin and delegate to services; services construct response schemas.",
             "evidence_id": "memory-convention",
             "locator": null,
-            "observed_at": "2026-07-15T00:50:02.975276Z",
+            "observed_at": "2026-07-16T21:11:35.837871Z",
             "reference": "README.md#Convention",
             "source": "memory",
             "supports": []
@@ -606,7 +606,7 @@
             "content": "Run python -m pytest -q for the installed FastAPI project.",
             "evidence_id": "memory-test-command",
             "locator": null,
-            "observed_at": "2026-07-15T00:50:02.975279Z",
+            "observed_at": "2026-07-16T21:11:35.837873Z",
             "reference": "README.md#Commands",
             "source": "memory",
             "supports": []
@@ -617,7 +617,7 @@
             "content": "app/main.py is the application factory and router composition root.",
             "evidence_id": "memory-main-file",
             "locator": null,
-            "observed_at": "2026-07-15T00:50:02.975281Z",
+            "observed_at": "2026-07-16T21:11:35.837874Z",
             "reference": "app/main.py",
             "source": "memory",
             "supports": []
@@ -665,7 +665,7 @@
       "GET /version",
       "thin router convention"
     ],
-    "created_at": "2026-07-15T00:50:02.977014Z",
+    "created_at": "2026-07-16T21:11:35.839559Z",
     "max_replans": 1,
     "original_request": "Agreg\u00e1 GET /version siguiendo las convenciones previamente detectadas. Recuper\u00e1 primero la memoria del proyecto.",
     "project_id": "fastapi-demo",
@@ -695,7 +695,7 @@
       "output_digest": "a653a35b1c4cfa546afe481e7eb64ca7e16bdadb112c44732a5e1666828b75a2",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.992859Z",
+      "started_at": "2026-07-16T21:11:35.852912Z",
       "status": "executed",
       "tool_name": "list_files"
     },
@@ -712,7 +712,7 @@
       "output_digest": "bdf16a4390ec18faac1756ed7a1d7a7674bffa443cdfe6af938140dc1d348caa",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.992864Z",
+      "started_at": "2026-07-16T21:11:35.852917Z",
       "status": "executed",
       "tool_name": "read_file"
     },
@@ -729,7 +729,7 @@
       "output_digest": "6513d94c31a0112f85665b6f65b38ce1e4d4bd603233674a31a62b152723eee3",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.992867Z",
+      "started_at": "2026-07-16T21:11:35.852920Z",
       "status": "executed",
       "tool_name": "read_file"
     },
@@ -746,7 +746,7 @@
       "output_digest": "9108ce3e1ab5833340e9d59b78408d8d27864a14e6119ed927c7f40aba198046",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:02.997586Z",
+      "started_at": "2026-07-16T21:11:35.856536Z",
       "status": "executed",
       "tool_name": "write_file"
     },
@@ -763,7 +763,7 @@
       "output_digest": "0195a390c589b79d922d6ce44d88cc9f5a55b92c0df4df1fafa2c7a4ad14b500",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:03.002421Z",
+      "started_at": "2026-07-16T21:11:35.859749Z",
       "status": "executed",
       "tool_name": "write_file"
     },
@@ -780,7 +780,7 @@
       "output_digest": "ffb9385e1c544b8ac940677936baf9a4520028e3e74e7e02a6f62c1ae4a53d12",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:03.010688Z",
+      "started_at": "2026-07-16T21:11:35.862878Z",
       "status": "executed",
       "tool_name": "write_file"
     },
@@ -802,7 +802,7 @@
       "output_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:03.374749Z",
+      "started_at": "2026-07-16T21:11:36.099518Z",
       "status": "executed",
       "tool_name": "run_command"
     },
@@ -824,7 +824,7 @@
       "output_digest": "4bcefcc9f6c645923b9993ccf73ad92e6b400ca25458ea14e095857fc2131342",
       "output_truncated": false,
       "policy_outcome": "allowed",
-      "started_at": "2026-07-15T00:50:03.374759Z",
+      "started_at": "2026-07-16T21:11:36.099531Z",
       "status": "executed",
       "tool_name": "run_command"
     }

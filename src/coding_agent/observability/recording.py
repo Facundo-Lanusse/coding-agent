@@ -17,6 +17,10 @@ class RecordingTracer:
         self.records: list[ObservationRecord] = []
         self._current: ContextVar[str | None] = ContextVar("recording_parent", default=None)
 
+    @property
+    def trace_id(self) -> str:
+        return "recording-trace"
+
     def observe(
         self,
         name: str,

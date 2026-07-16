@@ -1,0 +1,88 @@
+{
+  "commands": [],
+  "control_events": [
+    {
+      "detail": "received -> planning",
+      "event_type": "plan_created",
+      "outcome": "planning"
+    },
+    {
+      "detail": "planning -> exploring",
+      "event_type": "execution_started",
+      "outcome": "exploring"
+    },
+    {
+      "detail": "exploring -> failed",
+      "event_type": "agent_exception",
+      "outcome": "failed"
+    },
+    {
+      "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+      "event_type": "policy",
+      "outcome": "allowed"
+    },
+    {
+      "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+      "event_type": "policy",
+      "outcome": "allowed"
+    },
+    {
+      "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+      "event_type": "policy",
+      "outcome": "allowed"
+    },
+    {
+      "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+      "event_type": "policy",
+      "outcome": "allowed"
+    },
+    {
+      "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+      "event_type": "policy",
+      "outcome": "allowed"
+    },
+    {
+      "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+      "event_type": "policy",
+      "outcome": "allowed"
+    },
+    {
+      "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+      "event_type": "policy",
+      "outcome": "allowed"
+    },
+    {
+      "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+      "event_type": "policy",
+      "outcome": "allowed"
+    },
+    {
+      "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+      "event_type": "policy",
+      "outcome": "allowed"
+    },
+    {
+      "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+      "event_type": "policy",
+      "outcome": "allowed"
+    }
+  ],
+  "diff": "",
+  "files_modified": [],
+  "final_summary": "Task ended in failed: explorer failed (LLMResponseError): OpenAI function call arguments are not valid JSON.",
+  "fixture_after": "0fd46a08b32cd787ca3bf73db0e81eace8c77a05a0aca228f24060c0b8e210ae",
+  "fixture_before": "0fd46a08b32cd787ca3bf73db0e81eace8c77a05a0aca228f24060c0b8e210ae",
+  "memory_retrieved": [],
+  "observability": "langfuse",
+  "pending_commands": [],
+  "project_id": "fastapi-demo-real",
+  "provider_mode": "real",
+  "run_id": "real-openai-20260716-224029",
+  "scenario": "real_rag",
+  "schema_version": "1.0",
+  "session_id": "real-openai-20260716-224029",
+  "sources": [],
+  "status": "failed",
+  "task_id": "real-openai-20260716-224029",
+  "trace_id": "fb1df898e7cbb0a88eebc6d3aa2c8cab"
+}

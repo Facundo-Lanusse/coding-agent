@@ -21,6 +21,7 @@ from coding_agent.context.progress import (
     NoProgressSignal,
     ProgressStrategy,
 )
+from coding_agent.context.summarization import ExtractiveSummaryProvider
 
 __all__ = [
     "ContextBudget",
@@ -30,6 +31,7 @@ __all__ = [
     "ContextManager",
     "ContextOmission",
     "ContextSelection",
+    "ExtractiveSummaryProvider",
     "FingerprintFactory",
     "NoProgressDetector",
     "NoProgressReason",

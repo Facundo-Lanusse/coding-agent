@@ -97,6 +97,7 @@ class FunctionCall(FrozenModel):
     call_id: str = Field(min_length=1)
     name: str = Field(min_length=1)
     arguments: dict[str, object]
+    arguments_error: str | None = None
 
 
 class LLMRequest(FrozenModel):

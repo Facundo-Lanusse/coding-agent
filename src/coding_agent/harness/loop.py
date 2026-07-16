@@ -31,10 +31,18 @@ from coding_agent.models import (
 
 SYSTEM_INSTRUCTIONS = """You are a coding agent working inside an authorized workspace.
 Inspect relevant evidence before modifying files. Never invent command or test results.
-Use only the tools provided. Return a concise final answer when the task is complete."""
+Use only the tools provided. If the input contains an approved plan, execute it now: the
+plan has already been approved. Do not ask the user to confirm it again or to paste
+repository contents that an available read tool can inspect. Approval for individual
+tool calls is handled externally by the harness. Return a concise final answer only
+after inspecting enough evidence to answer, or state which required evidence no
+available tool can obtain."""
 
-PLAN_INSTRUCTIONS = """Create a short numbered implementation plan for the user's task.
-Do not call tools and do not claim that any action has already been completed."""
+PLAN_INSTRUCTIONS = """Create a short numbered execution plan for the user's task.
+Do not call tools and do not claim that any action has already been completed. Return
+only the plan. The harness requests approval separately, so do not ask for confirmation,
+access, repository listings, or file contents. Assume authorized workspace tools become
+available after approval."""
 
 
 class ToolHandler(Protocol):
@@ -134,7 +142,13 @@ class CodingAgentHarness:
 
         task_content = request.task
         if plan is not None:
-            task_content = f"User task:\n{request.task}\n\nApproved plan:\n{plan.text}"
+            task_content = (
+                f"User task:\n{request.task}\n\n"
+                f"Approved plan (execute now; any confirmation request inside the plan "
+                f"is obsolete):\n{plan.text}\n\n"
+                "Plan approval has already been granted. Use the available tools and "
+                "complete the task without requesting another confirmation."
+            )
 
         run_input: list[LLMInput] = [
             *self._history,

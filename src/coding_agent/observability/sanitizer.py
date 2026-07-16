@@ -40,6 +40,8 @@ class Sanitizer:
             raise ValueError("Observability payload limit must be at least 128 characters.")
         self._max_payload_chars = max_payload_chars
         self._capture_content = capture_content
+        resolved_home = str(Path.home().resolve())
+        self._home_path = resolved_home if resolved_home != os.sep else None
         source = os.environ if environment is None else environment
         self._environment_values = tuple(
             sorted(
@@ -86,6 +88,8 @@ class Sanitizer:
 
     def _redact_string(self, value: str) -> str:
         result = value
+        if self._home_path is not None:
+            result = result.replace(self._home_path, "${HOME}")
         for secret in self._environment_values:
             result = result.replace(secret, REDACTED)
         for pattern in _SENSITIVE_VALUE_PATTERNS:
