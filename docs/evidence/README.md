@@ -71,9 +71,7 @@ Consultar [run.json](runs/real-openai-20260717-003912/run.json),
 [summary.md](runs/real-openai-20260717-003912/summary.md) y
 [commands.json](runs/real-openai-20260717-003912/commands.json).
 
-## Capturas pendientes
+## Capturas Langfuse
 
-El trace id demuestra que la corrida fue instrumentada, pero la consigna exige
-capturas de la UI. No se fabricaron. Seguir
-[screenshots/README.md](screenshots/README.md) para obtenerlas y revisarlas antes
-de agregarlas.
+La [vista completa y la metadata](screenshots/README.md) muestran la jerarquía
+de la ejecución, modelo, tokens, latencia y costo directamente en la UI.

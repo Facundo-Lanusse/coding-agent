@@ -27,7 +27,12 @@ RUN_IDS = (
     "scenario-b-session-1",
     "scenario-b-session-2",
     "scenario-c-safety",
-    "real-openai-20260716-231650",
+    "real-openai-20260717-003912",
+)
+TRACE_ID = "cd6e9589a8074d1d52c738d79373c128"
+REQUIRED_SCREENSHOTS = (
+    ROOT / f"docs/evidence/screenshots/{TRACE_ID}-full-trace.png",
+    ROOT / f"docs/evidence/screenshots/{TRACE_ID}-metadata.png",
 )
 ARTIFACT_FILES = frozenset(
     {
@@ -46,6 +51,7 @@ MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 
 def test_required_documents_and_artifact_bundles_exist() -> None:
     assert all(path.is_file() for path in REQUIRED_DOCUMENTS)
+    assert all(path.is_file() and path.stat().st_size > 0 for path in REQUIRED_SCREENSHOTS)
     for run_id in RUN_IDS:
         run_directory = ROOT / "docs/evidence/runs" / run_id
         assert run_directory.is_dir()
@@ -79,10 +85,7 @@ def test_requirements_matrix_covers_mandatory_and_delivery_requirements() -> Non
         *(f"D{number:02d}" for number in range(1, 9)),
     ]
     assert all(len(row.split("|")) - 2 == 4 for row in rows)
-    assert all(
-        row.rstrip().endswith(("PASS |", "PENDIENTE GATE FINAL |", "PENDIENTE HUMANO |"))
-        for row in rows
-    )
+    assert all(row.rstrip().endswith("PASS |") for row in rows)
 
 
 @pytest.mark.parametrize(

@@ -1,33 +1,21 @@
 # Capturas Langfuse de la ejecución completa
 
-Este directorio todavía no contiene capturas. No agregar placeholders con
-apariencia de resultado, screenshots de otra tarea ni ids escritos manualmente.
+Las capturas fueron tomadas el 2026-07-16 desde la UI Langfuse v3.218.0 para la
+ejecución `real-openai-20260717-003912`, cuyo trace id es
+`cd6e9589a8074d1d52c738d79373c128`.
 
-## Estado actual
+- [Vista completa](cd6e9589a8074d1d52c738d79373c128-full-trace.png): grafo
+  agregado con Main, Explorer, Researcher, Implementer, Tester y Reviewer;
+  incluye RAG, fallback web, policy, tools, memoria, checks y `result.final`.
+- [Metadata](cd6e9589a8074d1d52c738d79373c128-metadata.png): grafo expandido,
+  archivos modificados, modelo `gpt-5-mini`, 14 llamadas LLM, límite global de
+  20 llamadas, 133.472 tokens, latencia de 1m33s y costo de USD 0,047863.
 
-La ejecución completa es `real-openai-20260717-003912`, con trace id
-`cd6e9589a8074d1d52c738d79373c128`: alcanzó Reviewer, ejecutó tests con exit 0
-y terminó `completed`. Aún no se guardó una captura. Los artifacts
-deterministas conservan `trace_id=null` honestamente y cada demo real crea un directorio separado
-`docs/evidence/runs/real-openai-<fecha>/`.
-
-## Procedimiento de captura
-
-1. Abrir el proyecto Langfuse y buscar
-   `cd6e9589a8074d1d52c738d79373c128`; como alternativa, filtrar
-   por `task_id`, `project_id`, `session_id` y el intervalo de ejecución.
-2. Verificar una raíz y descendientes para cinco agentes, LLM generation,
-   policy/tool, RAG/web si aplica, checks, review y `result.final`. Confirmar
-   tokens/latencia/costo cuando estén disponibles y ausencia de secrets.
-3. Guardar capturas PNG reales, sin editar valores:
-
-   ```text
-   docs/evidence/screenshots/<trace-id>-full-trace.png
-   docs/evidence/screenshots/<trace-id>-metadata.png
-   ```
-
-4. Actualizar este README con fecha, task id, trace id, filenames y qué muestra
-   cada imagen. No editar a mano el trace id generado en `run.json`.
+La traza alcanzó Reviewer, ejecutó `pytest -q` con exit 0 y terminó
+`completed`, según el
+[bundle sanitizado](../runs/real-openai-20260717-003912/run.json). La UI muestra
+`CONTENT_CAPTURE_DISABLED`, por lo que las capturas no exponen prompts ni
+respuestas del modelo.
 
 ## Smoke test disponible
 
@@ -37,6 +25,5 @@ Con SDK/credenciales aprobados puede ejecutarse:
 pytest -m langfuse_integration -q
 ```
 
-Sólo crea `coding-agent.integration-smoke`. Puede servir para diagnosticar
-conectividad y sanitización, pero no satisface la captura de traza completa del
-caso de uso.
+Sólo crea `coding-agent.integration-smoke`; sirve para diagnosticar
+conectividad y sanitización, pero no reemplaza las capturas del caso de uso.

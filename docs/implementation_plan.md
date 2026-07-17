@@ -99,4 +99,5 @@ Verificación offline posterior:
 - la corrida real `real-openai-20260717-003912` terminó `completed`: los cinco
   roles finalizaron, `pytest -q` tuvo exit 0, Reviewer aceptó y Langfuse emitió
   el trace `cd6e9589a8074d1d52c738d79373c128`;
-- sólo queda pendiente la captura humana de la traza en la UI Langfuse.
+- se guardaron capturas verificadas del grafo completo y su metadata desde la
+  UI Langfuse.

@@ -85,4 +85,4 @@ y artifacts sanitizados. Todos declaran honestamente
 `provider_mode=deterministic_fake`, `observability=recording` y `trace_id=null`.
 La composición productiva equivalente se ejecutó mediante
 `coding-agent demo real`; su bundle OpenAI/Langfuse completo se referencia en
-el escenario A. Las capturas de la UI siguen siendo evidencia humana pendiente.
+el escenario A y las capturas de la UI están en `evidence/screenshots/`.

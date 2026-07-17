@@ -179,7 +179,7 @@ completadas. El procedimiento está en
 ## Limitaciones honestas
 
 - La única corrida externa completa conservada tiene trace id
-  `cd6e9589a8074d1d52c738d79373c128`; falta guardar capturas de su UI.
+  `cd6e9589a8074d1d52c738d79373c128` y capturas verificadas de su UI.
 - Tavily puede registrar cero búsquedas si el RAG ya aporta evidencia suficiente.
 - Los bundles reproducibles A/B/C son evidencia histórica sanitizada; la branch
   de entrega conserva el runtime real y los tests deterministas, no su generador

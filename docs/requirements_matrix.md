@@ -1,8 +1,7 @@
 # Matriz requisito-evidencia
 
 Esta matriz contiene sólo requisitos de la consigna. `PASS` significa que
-existe código y prueba o artifact concreto. La captura Langfuse permanece
-`PENDIENTE HUMANO`.
+existe código y prueba o artifact concreto.
 
 | ID | Requisito | Evidencia principal | Estado |
 |---|---|---|---|
@@ -31,5 +30,5 @@ existe código y prueba o artifact concreto. La captura Langfuse permanece
 | D04 | Explicación de arquitectura y estado. | `docs/architecture.md` | PASS |
 | D05 | Documentación RAG. | `docs/rag.md` | PASS |
 | D06 | Evidencia de al menos dos tareas. | `docs/evidence/README.md` | PASS |
-| D07 | Captura de una traza completa. | `docs/evidence/screenshots/` | PENDIENTE HUMANO |
+| D07 | Captura de una traza completa. | `docs/evidence/screenshots/` | PASS |
 | D08 | Reflexión breve. | `docs/reflection.md` | PASS |

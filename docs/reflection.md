@@ -38,8 +38,8 @@ La corrida corregida `real-openai-20260717-003912`, trace id
 `cd6e9589a8074d1d52c738d79373c128`, completó el objetivo: los cinco roles
 terminaron en orden, Tester ejecutó `pytest -q` con `3 passed` y Reviewer aceptó
 el diff mínimo. El reset mantuvo el workspace aislado y la memoria recuperó
-resultados históricos sin desplazar la evidencia actual. Sólo falta capturar
-esta traza desde la UI Langfuse.
+resultados históricos sin desplazar la evidencia actual. La traza y su metadata
+quedaron preservadas mediante capturas verificadas de la UI Langfuse.
 
 Los escenarios deterministas usan `compileall` y un contrato estático para no
 depender del entorno FastAPI. La corrida real sí ejecutó los tres tests HTTP con
@@ -79,11 +79,10 @@ simularon ni se ocultaron.
 
 Prioridades:
 
-1. guardar capturas verificadas de la traza real completa;
-2. reemplazar el retrieval lineal por un índice adecuado si crece el corpus y
+1. reemplazar el retrieval lineal por un índice adecuado si crece el corpus y
    evaluar precision/recall con un set de queries;
-3. evaluar con corridas reales qué thresholds de no-progreso reducen costo sin
+2. evaluar con corridas reales qué thresholds de no-progreso reducen costo sin
    cortar exploraciones útiles;
-4. ampliar la sanitización portable a cualquier nuevo tipo
+3. ampliar la sanitización portable a cualquier nuevo tipo
    de locator que se agregue al schema de artifacts;
-5. probar sobre un repositorio Git real para status/diff nativos.
+4. probar sobre un repositorio Git real para status/diff nativos.
