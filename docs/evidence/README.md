@@ -54,7 +54,7 @@ vez y bloquea la tarea sin ejecutar un tercer intento idéntico.
 ## Corrida externa completa
 
 Directorio:
-[real-openai-20260716-231650](runs/real-openai-20260716-231650/).
+[real-openai-20260717-003912](runs/real-openai-20260717-003912/).
 
 Resultado real:
 
@@ -65,11 +65,11 @@ Resultado real:
 - diff esperado;
 - `pytest -q`: 3 passed, exit 0;
 - Reviewer acepta;
-- trace id Langfuse: `8248244a2224f1dc099fff1240e5c040`.
+- trace id Langfuse: `cd6e9589a8074d1d52c738d79373c128`.
 
-Consultar [run.json](runs/real-openai-20260716-231650/run.json),
-[summary.md](runs/real-openai-20260716-231650/summary.md) y
-[commands.json](runs/real-openai-20260716-231650/commands.json).
+Consultar [run.json](runs/real-openai-20260717-003912/run.json),
+[summary.md](runs/real-openai-20260717-003912/summary.md) y
+[commands.json](runs/real-openai-20260717-003912/commands.json).
 
 ## Capturas pendientes
 

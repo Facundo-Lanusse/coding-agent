@@ -76,3 +76,27 @@ completa y los bundles A/B/C.
 
 Supuesto no verificado: no se abrió la UI Langfuse en esta fase. La captura de
 la traza completa sigue siendo una acción humana explícita.
+
+## Estabilización de la demo real en `entrega-tp`
+
+El 2026-07-17 una nueva corrida real (`real-openai-20260717-003010`) alcanzó
+OpenAI, memoria, RAG, Tavily y Langfuse, pero terminó bloqueada en Implementer.
+El rol consumió sus cuatro turnos leyendo archivos y delegó incorrectamente la
+edición; además, Researcher recuperó correctamente una tool call con argumentos
+JSON inválidos. No hubo cambios de fixture ni tests ejecutados en esa corrida.
+
+Se mantuvo el límite global de 20 llamadas y se amplió de cuatro a seis turnos
+por rol para reservar margen de escritura y cierre. Los contratos indican ahora
+que Researcher entrega evidencia a Implementer y que Implementer aplica el
+cambio cuando dispone de `write_file`, sin delegarlo a Reviewer o CI. La salida
+estructurada también debe ser breve.
+
+Verificación offline posterior:
+
+- tests focalizados de backend y runtime: 12 pasaron;
+- `make check`: 135 tests pasaron y 1 integración Langfuse se omitió por falta
+  de credenciales; Ruff y mypy pasaron;
+- la corrida real `real-openai-20260717-003912` terminó `completed`: los cinco
+  roles finalizaron, `pytest -q` tuvo exit 0, Reviewer aceptó y Langfuse emitió
+  el trace `cd6e9589a8074d1d52c738d79373c128`;
+- sólo queda pendiente la captura humana de la traza en la UI Langfuse.

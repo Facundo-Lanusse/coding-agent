@@ -246,7 +246,29 @@ def test_researcher_contract_does_not_require_downstream_tests() -> None:
 
     instructions = llm.requests[0].instructions
     assert "Current repository evidence overrides historical memory" in instructions
+    assert "hand that evidence to Implementer, not Reviewer or CI" in instructions
     assert "do not block because implementation or tests are still pending" in instructions
+
+
+def test_implementer_contract_owns_edits_and_preserves_submission_turn() -> None:
+    llm = SequenceLLM([LLMResponse(tool_calls=(_submit_call(),))])
+    backend = OpenAIAgentBackend(
+        llm,
+        call_budget=LLMCallBudget(5),
+        max_iterations_per_agent=4,
+    )
+
+    backend.run(
+        agent=AgentName.IMPLEMENTER,
+        responsibility="Implement the requested endpoint.",
+        context=_context(),
+        tools=ScopedToolbox((), allowed_names=frozenset()),
+    )
+
+    instructions = llm.requests[0].instructions
+    assert "This role owns repository edits" in instructions
+    assert "use no more than two turns for inspection" in instructions
+    assert "at most six short observations" in instructions
 
 
 def test_tester_contract_requires_direct_argv_without_shell_wrapper() -> None:

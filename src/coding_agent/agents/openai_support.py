@@ -102,12 +102,15 @@ def role_instructions(
             "If that evidence is sufficient, submit immediately without another search. Never "
             "relabel an inference as a source. Current repository evidence overrides historical "
             "memory when they conflict. Your role succeeds when evidence is sufficient to guide "
-            "implementation; do not block because implementation or tests are still pending in "
-            "downstream roles."
+            "implementation; hand that evidence to Implementer, not Reviewer or CI; do not block "
+            "because implementation or tests are still pending in downstream roles."
         ),
         AgentName.IMPLEMENTER: (
-            "Apply only the requested minimal change. Read a file before replacing it. "
-            "Batch independent reads or writes in parallel. For analysis-only tasks, do not write."
+            "Apply only the requested minimal change. This role owns repository edits: when "
+            "write_file is provided, use it instead of deferring the patch to Reviewer or CI. "
+            "Read a file before replacing it, batch independent reads or writes in parallel, and "
+            "use no more than two turns for inspection. Tester runs checks after your edits. For "
+            "analysis-only tasks, do not write."
         ),
         AgentName.TESTER: (
             "Run one focused allowlisted check, then submit. For pytest call run_command "
@@ -129,6 +132,7 @@ def role_instructions(
         "Reserve the final turn for submit_agent_result. "
         "Use only the provided tools. Tool policy and approvals are enforced externally. "
         "Do not ask the user to paste files that tools can read. Keep actions minimal. "
+        "Keep the final summary concise and include at most six short observations. "
         "When finished, call submit_agent_result exactly once and alone; do not return plain text."
     )
 

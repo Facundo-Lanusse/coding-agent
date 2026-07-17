@@ -120,7 +120,9 @@ make demo-real
 ```
 
 El comando exige confirmación de costo, limita la ejecución a 20 llamadas LLM,
-cuatro turnos por rol, 2400 tokens de salida y una búsqueda Tavily. Trabaja sólo
+seis turnos por rol, 2400 tokens de salida y una búsqueda Tavily. El margen por
+rol permite recuperar una tool call malformada sin dejar al Implementer sin un
+turno de escritura y otro de cierre. Trabaja sólo
 sobre `tmp/demo-runtime/` y escribe un bundle sanitizado bajo
 `docs/evidence/runs/real-openai-<fecha>/`.
 
@@ -177,7 +179,7 @@ completadas. El procedimiento está en
 ## Limitaciones honestas
 
 - La única corrida externa completa conservada tiene trace id
-  `8248244a2224f1dc099fff1240e5c040`; falta guardar capturas de su UI.
+  `cd6e9589a8074d1d52c738d79373c128`; falta guardar capturas de su UI.
 - Tavily puede registrar cero búsquedas si el RAG ya aporta evidencia suficiente.
 - Los bundles reproducibles A/B/C son evidencia histórica sanitizada; la branch
   de entrega conserva el runtime real y los tests deterministas, no su generador
