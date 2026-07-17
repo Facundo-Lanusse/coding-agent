@@ -16,7 +16,7 @@ from coding_agent.config import (
     load_config,
     resolve_workspace,
 )
-from coding_agent.demo import DemoScenarioRunner, FixtureResetter
+from coding_agent.demo import FixtureResetter
 from coding_agent.harness import CodingAgentHarness
 from coding_agent.llm.openai_client import OpenAIResponsesClient
 from coding_agent.models import (
@@ -50,7 +50,7 @@ app = typer.Typer(
 )
 config_app = typer.Typer(help="Inspect and validate agent configuration.", no_args_is_help=True)
 rag_app = typer.Typer(help="Ingest and query the persistent technical RAG.", no_args_is_help=True)
-demo_app = typer.Typer(help="Run reproducible FastAPI demo scenarios.", no_args_is_help=True)
+demo_app = typer.Typer(help="Run the bounded FastAPI delivery scenario.", no_args_is_help=True)
 app.add_typer(config_app, name="config")
 app.add_typer(rag_app, name="rag")
 app.add_typer(demo_app, name="demo")
@@ -219,73 +219,6 @@ def demo_reset(
     typer.echo(snapshot.checksum)
 
 
-@demo_app.command("rag")
-def demo_rag(
-    runtime_root: Annotated[Path, typer.Option("--runtime-root")] = Path("tmp/demo-runtime"),
-    output_root: Annotated[Path, typer.Option("--output-root")] = Path(
-        "docs/evidence/runs"
-    ),
-) -> None:
-    """Run scenario A with deterministic embeddings and providers."""
-
-    run = _demo_runner(runtime_root, output_root).run_rag()
-    typer.echo(run.artifact.model_dump_json(indent=2))
-
-
-@demo_app.command("memory")
-def demo_memory(
-    runtime_root: Annotated[Path, typer.Option("--runtime-root")] = Path("tmp/demo-runtime"),
-    output_root: Annotated[Path, typer.Option("--output-root")] = Path(
-        "docs/evidence/runs"
-    ),
-) -> None:
-    """Run two independent memory sessions against one SQLite database."""
-
-    database = runtime_root / "scenario-b-memory.sqlite3"
-    first = _demo_runner(runtime_root, output_root).run_memory_session_1(database)
-    second = _demo_runner(runtime_root, output_root).run_memory_session_2(database)
-    typer.echo(first.artifact.model_dump_json(indent=2))
-    typer.echo(second.artifact.model_dump_json(indent=2))
-
-
-@demo_app.command("safety")
-def demo_safety(
-    runtime_root: Annotated[Path, typer.Option("--runtime-root")] = Path("tmp/demo-runtime"),
-    output_root: Annotated[Path, typer.Option("--output-root")] = Path(
-        "docs/evidence/runs"
-    ),
-) -> None:
-    """Run the denied-write, approval and repeated-failure scenario."""
-
-    run = _demo_runner(runtime_root, output_root).run_safety()
-    typer.echo(run.artifact.model_dump_json(indent=2))
-
-
-@demo_app.command("all")
-def demo_all(
-    runtime_root: Annotated[Path, typer.Option("--runtime-root")] = Path("tmp/demo-runtime"),
-    output_root: Annotated[Path, typer.Option("--output-root")] = Path(
-        "docs/evidence/runs"
-    ),
-) -> None:
-    """Run all deterministic scenarios and write four artifact directories."""
-
-    runner = _demo_runner(runtime_root, output_root)
-    database = runtime_root / "scenario-b-memory.sqlite3"
-    runs = (
-        runner.run_rag(),
-        runner.run_memory_session_1(database),
-        DemoScenarioRunner(
-            seed_root=_demo_seed(),
-            runtime_root=runtime_root,
-            rag_sources=Path("rag_sources"),
-            output_root=output_root,
-        ).run_memory_session_2(database),
-        runner.run_safety(),
-    )
-    typer.echo(json.dumps([run.artifact.run_id for run in runs]))
-
-
 @demo_app.command("real")
 def demo_real(
     scenario: Annotated[str, typer.Option("--scenario")] = "rag",
@@ -390,15 +323,6 @@ def _rag_runtime(
 
 def _demo_seed() -> Path:
     return Path("examples/fastapi_demo/seed")
-
-
-def _demo_runner(runtime_root: Path, output_root: Path) -> DemoScenarioRunner:
-    return DemoScenarioRunner(
-        seed_root=_demo_seed(),
-        runtime_root=runtime_root,
-        rag_sources=Path("rag_sources"),
-        output_root=output_root,
-    )
 
 
 def _configuration_failure(error: ConfigurationError) -> NoReturn:

@@ -5,8 +5,7 @@ PYTHON_BIN := $(VENV)/bin/python
 CLI := $(VENV)/bin/coding-agent
 DEMO_BIN := $(DEMO_VENV)/bin
 
-.PHONY: bootstrap test coverage lint typecheck check build config rag-ingest demo demo-real \
-	docker-build docker-dev docker-check
+.PHONY: bootstrap test coverage lint typecheck check build config rag-ingest demo-real
 
 bootstrap: $(PYTHON_BIN)
 	$(PYTHON_BIN) -m pip install -e ".[dev]"
@@ -37,22 +36,9 @@ config:
 rag-ingest:
 	$(CLI) rag ingest ./rag_sources --config agent.config.yaml --fake-embeddings
 
-demo:
-	$(CLI) demo all --runtime-root tmp/demo-runtime --output-root docs/evidence/runs
-
 demo-real:
 	@test -x "$(DEMO_BIN)/pytest" || (echo "Demo environment missing: prepare $(DEMO_VENV) with the demo dev dependencies."; exit 1)
 	PATH="$(abspath $(DEMO_BIN)):$$PATH" $(CLI) demo real --scenario rag \
 		--confirm-cost --max-llm-calls 20 \
 		--max-iterations-per-agent 4 --max-output-tokens 2400 \
 		--runtime-root tmp/demo-runtime --output-root docs/evidence/runs
-
-docker-build:
-	docker build --target runtime --tag coding-agent-advanced:local .
-
-docker-dev:
-	docker compose --profile dev run --rm dev
-
-docker-check:
-	docker compose --profile dev run --rm dev /bin/sh -c \
-		"python -m pytest -q && ruff check src tests examples && mypy src tests"

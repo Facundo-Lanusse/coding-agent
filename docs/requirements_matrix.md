@@ -1,97 +1,35 @@
-# Matriz de requisitos
+# Matriz requisito-evidencia
 
-## 1. Criterio de lectura
+Esta matriz contiene sólo requisitos de la consigna. `PASS` significa que
+existe código y prueba o artifact concreto. La captura Langfuse permanece
+`PENDIENTE HUMANO`.
 
-Esta matriz descompone la consigna completa, incluidas sus ocho entregas, y
-agrega al final las decisiones vinculantes del proyecto. El estado inicial se
-evaluó contra `legacy/coding_agent_tp_anterior.ipynb`, `docs/legacy_audit.md` y
-`agent.config.yaml`; que una clave exista en YAML no demuestra que esté
-implementada.
-
-Estados finales de auditoría:
-
-- `PASS`: requisito satisfecho con archivo, test, comando o artifact concreto.
-- `FAIL`: requisito incumplido sin una vía externa que pueda cerrarlo.
-- `PARTIAL`: hay evidencia material, pero falta una parte de la integración o
-  del criterio de aceptación.
-- `REQUIERE ACCIÓN HUMANA`: la implementación local existe, pero faltan
-  credenciales, costo autorizado, ejecución externa o captura manual.
-
-Un skip, fake o RecordingTracer puede demostrar fallback/contratos, pero no una
-ejecución real de proveedor. En particular, R29/R35/R43 no pasan sin trace id y
-captura Langfuse auténticos.
-
-## 2. Requisitos de la consigna
-
-| requisito | evidencia esperada | estado inicial | módulo responsable | prueba que lo verificará | fase | estado |
-|---|---|---|---|---|---|---|
-| R01. Evolucionar el coding agent previo a un sistema de agentes aplicado a un lenguaje/framework/ecosistema y caso concreto. | Paquete ejecutable, referencias explícitas a conceptos migrados y demos Python/FastAPI. | Solo hay un coding agent monolítico en Colab y un informe de dos corridas. | `harness`, `orchestrator`, `examples` | E2E A/B/C más `test_openai_agent_backend.py` y `test_real_runtime.py` verifican el sistema y su composición real acotada. | 01, 03, 07, 09 | PASS |
-| R02. Combinar tools locales, RAG técnico, memoria persistente, subagentes, seguridad y observabilidad. | Una tarea cuyo estado/traza muestre todos esos componentes coordinados. | El notebook solo tiene tools locales/web y supervisión básica. | `orchestrator` e integración de módulos | A/B/C prueban los contratos; `real-openai-20260716-231650` completa OpenAI, cinco roles, memoria/contexto, RAG/Tavily, policy y Langfuse. | 03-09 | PASS |
-| R03. No usar frameworks de orquestación como LangChain, LangGraph, CrewAI, AutoGen o similares. | Orquestador propio, dependencias/imports auditados y máquina de estados visible. | El notebook no usa esos frameworks, pero tampoco existe el producto final. | `orchestrator`, packaging | Escaneo de `pyproject.toml` e imports; `test_state_machine.py`; `test_orchestrator.py`. | 01, 03, 09 | PASS |
-| R04. Conservar harness y tools base: lectura, escritura, comandos, exploración de archivos y búsqueda web. | Contratos/adaptadores equivalentes y pruebas de cada tool dentro del loop. | Existen `read_file`, `write_file`, `run_command`, `list_files`, `web_search` y loop, con fallas de seguridad. | `harness`, `tools` | `test_harness.py`, `test_tools_filesystem.py`, `test_policy_commands.py`, `test_web_tool.py`. | 01, 02, 09 | PASS |
-| R05. Agente principal recibe la tarea, mantiene estado general y coordina subagentes. | `MainAgent`/`Orchestrator`, estado compartido y event log de una corrida. | No existe agente principal; una función global ejecuta un único modelo. | `orchestrator`, `state` | Unit flow y escenarios A/B/C con cinco roles y artifacts de estado. | 03, 07 | PASS |
-| R06. Explorer entiende estructura, arquitectura, dependencias, convenciones y archivos relevantes. | `ExplorerAgent` con resultado estructurado y provenance de repo. | El único agente puede listar/leer, sin rol ni output especializado. | `agents.explorer` | Scenario A/B lista y lee la fixture real, registrando arquitectura y convención. | 03, 07 | PASS |
-| R07. Researcher busca primero en RAG y en web cuando sea necesario. | `ResearcherAgent`, decisión de suficiencia y contador/trace RAG-web. | Solo hay web Tavily directa; no existe RAG. | `agents.researcher`, `rag`, `tools.web` | Unit fallback más scenario A: evidencia RAG suficiente y cero web. | 03, 05, 07 | PASS |
-| R08. Implementer propone o realiza cambios usando los hallazgos disponibles. | Cambios vinculados a plan/evidence ids y autorizados por policy. | El agente único escribe archivos sin rol ni evidencia estructurada. | `agents.implementer` | Scenarios A/B2 ejecutan writes autorizados y guardan `FileChange`/diff. | 03, 07 | PASS |
-| R09. Tester valida con tests, build, lint, logs u otros checks definidos. | Check records con comando, exit code, stdout/stderr, duración y alcance. | El notebook ejecutó pytest real y corrigió el alcance tras un fallo. | `agents.tester`, `tools.shell` | Scenarios ejecutan compile y pytest de contrato con exit codes/digests reales. | 03, 07 | PASS |
-| R10. Reviewer revisa diff/cambios y valida que respondan al pedido. | Resultado de review contra criterios, diff y hallazgos por severidad. | No existe rol de revisión ni diff estructurado. | `agents.reviewer`, `tools.repository` | Reviewer acepta scope A/B y test E2E rechaza `app/core/config.py` fuera del pedido. | 03, 07 | PASS |
-| R11. Los subagentes pueden tener tools y permisos diferentes según responsabilidad. | Matriz de capabilities aplicada por registry/gateway. | Hay un solo agente con todas las tools. | `agents`, `tools.registry`, `policies` | `test_specialists_receive_different_tool_capabilities`; `test_agent_cannot_execute_a_tool_not_assigned_to_it`. | 02, 03 | PASS |
-| R12. Estado compartido registra pedido original, avance, resultados, fuentes, archivos modificados y observaciones como mínimo. | `TaskState` serializado con campos mínimos y event log. | Solo existe lista global de mensajes y contadores de iteraciones/tools. | `state` | `test_complete_flow_orders_agents_and_accumulates_shared_state`; schema Pydantic. | 03, 07 | PASS |
-| R13. Memoria persistente por proyecto más allá de una conversación, capaz de guardar arquitectura, archivos, dependencias, comandos, convenciones, decisiones, bugs y resúmenes. | DB SQLite reabierta en otra sesión con categorías, provenance y freshness. | Historial en RAM del proceso; no hay persistencia ni separación por proyecto. | `memory` | `test_memory.py`: reapertura, ids iguales aislados, stale, categorías/relevancia e inferencia respaldada; E2E en Fase 07. | 04, 07 | PASS |
-| R14. Especializar el agente en un ecosistema técnico elegido. | Configuración, prompts, corpus y demo explícitos para Python/FastAPI. | El notebook es genérico y trabaja sobre openai-cookbook. | `agents`, `rag`, `examples` | Corpus y repo FastAPI con readiness/version, tests y tres escenarios. | 03, 05, 07 | PASS |
-| R15. RAG sobre documentación, ejemplos, READMEs o proyectos de referencia del ecosistema. | `rag_sources/` con manifest de fuentes/versiones y CLI de ingesta. | No existe corpus ni ingesta. | `rag.ingestion` | `test_rag_loaders.py`, `test_rag_cli.py` y manifest reproducible. | 05 | PASS |
-| R16. Implementar chunking, embeddings y almacenamiento vectorial. | Chunks/metadatos, adaptador/fake de embeddings y vector DB persistente. | No existe ninguno de los tres. | `rag.chunking`, `rag.embeddings`, `rag.vector_store` | `test_rag_chunking.py`, `test_rag_embeddings.py`, `test_vector_store.py`. | 05 | PASS |
-| R17. Recuperar contexto relevante antes de responder o decidir. | Evento retrieval anterior al LLM/decisión y context manifest. | El notebook lee archivos ad hoc; no hace retrieval semántico. | `rag.retrieval`, `context`, `orchestrator` | Scenario A ordena Researcher/RAG antes de Implementer y conserva fuentes. | 05, 07 | PASS |
-| R18. Mostrar documentos o fragmentos recuperados y utilizados. | Respuesta/artifact con title, section, locator, score y fragmento/digest usado. | Web devuelve JSON, pero no hay selección ni citas RAG. | `rag`, `state.Evidence`, `artifacts` | `test_sufficient_rag_avoids_web_and_preserves_provenance` y `ResearchResponse.render`. | 05, 07 | PASS |
-| R19. Diferenciar información de repositorio, memoria, RAG, web e inferencias propias. | `EvidenceSource` tipado y salida agrupada sin atribuciones falsas. | Todas las observaciones están mezcladas en texto libre. | `state`, `context`, `artifacts` | `test_evidence_types_remain_separate_and_inferences_are_not_fabricated` más modelos Fases 03/04. | 03-05 | PASS |
-| R20. Consultar primero RAG; si es insuficiente, usar web fallback priorizando documentación oficial y fuentes confiables. | Decisión de suficiencia, threshold, allowlist/preferencia de dominios y motivo de fallback. | Solo existe búsqueda Tavily manual sin RAG ni política de fuentes. | `agents.researcher`, `rag`, `tools.web` | Tests fake prueban RAG primero, cero web si suficiente, una llamada si insuficiente y revalidación URL. | 05 | PASS |
-| R21. Manejar tareas/proyectos extensos resumiendo pasado, preservando decisiones y evitando enviar repo/historial completo. | `ContextSelection` con presupuesto, summary y reporte included/omitted. | Se envía todo `messages` acumulado; no hay resumen ni budget. | `context` | `test_context_manager.py` prueba decisiones/errores, summary y presupuesto; `test_orchestrator.py` verifica carga de memoria y selección automática por `MainAgent`. | 04, 09 | PASS |
-| R22. Detectar acciones repetidas sin progreso y cambiar estrategia, replanificar, detenerse o pedir ayuda. | Fingerprints, deltas, eventos de loop y transición explícita. | Solo hay corte fijo a 15 iteraciones; una exploración terminó sin respuesta. | `context.progress`, `orchestrator` | Unit tests más escenario C: dos fallos, `REPLANNING`, `BLOCKED` y sin tercer intento. | 04, 07 | PASS |
-| R23. Reconocer evidencia insuficiente por ambigüedad, falta de docs, permisos, error no diagnosticado o riesgo, y explicar intento/falta/necesidad. | Estado terminal estructurado con reason, attempts, missing evidence y requested help. | El notebook termina por máximo o devuelve error textual; no razona suficiencia. | `orchestrator`, `state`, `context` | Scenario C artifact explica intentos, policies, repetición, replan y stop. | 03, 04, 07 | PASS |
-| R24. Leer archivo de configuración y validarlo antes de ejecutar cada tool call. | Snapshot/hash y evento `config_validated` inmediatamente anterior a policy/tool. | YAML existe, pero el notebook no lo lee ni valida. | `config`, `policies`, `tools.gateway` | `test_config_and_policy_are_evaluated_before_tool`, `test_invalid_configuration_prevents_tool_execution` y `test_configuration_is_reloaded_before_each_call`. | 01, 02 | PASS |
-| R25. Política de lectura para denegar archivos/directorios sensibles. | Globs aplicados a path canónico; decisiones auditables. | `agent.config.yaml` declara deny; notebook no bloquea `.env`, PEM o secrets dentro del workspace. | `policies`, `tools.filesystem` | `test_policy_paths.py`: normal, `../`, prefijo externo, symlink externo, `.env`, PEM y `secrets/**`. | 02 | PASS |
-| R26. Política de escritura para denegar paths definidos, por ejemplo `.github/**` y lockfiles. | Escritura atómica posterior a decisión allow y bloqueo de globs deny. | YAML declara reglas; `write_file` del notebook permite cualquier path interno y luego es sobrescrito por una versión sin workspace. | `policies`, `tools.filesystem` | `test_github_path_is_blocked_for_write` y `test_write_file_uses_atomic_replace`. | 02 | PASS |
-| R27. Política de comandos prohibidos, por ejemplo `rm -rf` y `git push`. | Parser argv, deny estructurado, cero ejecución y audit record. | Hay blacklist por substring y `shell=True`; incluye algunos comandos pero es evadible/incompleta. | `policies`, `tools.shell` | `test_denied_command_is_not_executed` y bloqueo de nested process; runner spy queda en cero. | 02 | PASS |
-| R28. Política de acciones/comandos que requieren confirmación, como install o commit. | `WAITING_APPROVAL`, request ligado a fingerprint y revalidación antes de ejecutar. | Supervision pide aprobación para toda escritura/comando mediante `input()`, sin regla granular ni persistencia. | `policies`, `ApprovalProvider`, `orchestrator` | Scenario C registra install/commit como `requires_approval` sin ejecución; pausa plan ya probada. | 01-03, 07 | PASS |
-| R29. Integrar una herramienta de observabilidad y usarla en al menos una prueba entregada. | Adaptador Langfuse, test condicional y trace id real de una ejecución. | No existe observabilidad. | `observability` | `real-openai-20260716-231650` terminó `completed` con trace id `8248244a2224f1dc099fff1240e5c040`; unit/integration tests verifican el adapter. | 06-09 | PASS |
-| R30. Registrar prompts, modelo, llamadas LLM, tools, documentos, web, iteraciones, errores, latencia, tokens, costo estimado y resultado final. | Trace jerárquica con todos los campos disponibles, sanitizados y limitada en tamaño. | Solo prints y contadores; faltan casi todos los campos y persistencia. | `observability`, instrumentación transversal | Tests cubren todos los hooks; la ejecución completa registra cinco roles, memoria, RAG/web, policies, diff, pytest exit 0, Reviewer y resultado final. | 06-09 | PASS |
-| R31. Definir caso de uso concreto con resultado verificable, no solo “probar que funciona”. | Descripción, fixture y criterios medibles para análisis y endpoint FastAPI. | Informe legado usa una calculadora genérica y exploración, no el caso final. | `examples`, `docs/case_use.md` | `test_scenario_a_coordinates_all_roles_rag_checks_and_review` y artifact A. | 07, 08 | PASS |
-| R32. Probar una tarea que use RAG y muestre fuentes recuperadas. | Escenario A, artifact de fuentes y evento retrieval. | No existe RAG. | `rag`, `examples`, `artifacts` | Escenario A completa los cinco roles y guarda tres fuentes RAG oficiales. | 05, 07 | PASS |
-| R33. Probar una tarea que use memoria del proyecto. | Dos sesiones separadas con recuperación previa a implementar. | Solo historial del mismo proceso. | `memory`, `examples` | Escenario B usa dos runner/repository instances y recupera cuatro memorias antes de implementar. | 04, 07 | PASS |
-| R34. Probar una tarea que cambie estrategia, se detenga o pida ayuda. | Escenario reproducible con mismo fallo/policy y eventos de replan/stop/help. | El notebook cambia el comando pytest una vez, pero sin detector ni artifact estructurado. | `context`, `orchestrator`, `examples` | Escenario C replanifica una vez, bloquea y no ejecuta el tercer fallo. | 04, 07 | PASS |
-| R35. Entregar al menos una ejecución registrada en observabilidad. | Trace id Langfuse y artifact de la traza completa; capturas se controlan en R43. | No hay herramienta ni credenciales verificadas. | `observability`, proceso de evidencia | Artifact completo `real-openai-20260716-231650`, exit 0, Reviewer y trace id `8248244a2224f1dc099fff1240e5c040`. | 06-09 | PASS |
-| R36. Extra opcional: sistema de plugins/registro extensible de tools con interfaz común y descubrimiento. | Registro extensible probado con una tool de fixture sin cambiar el núcleo. | Dict global estático `TOOL_FUNCTIONS`; no hay plugins. | `tools.registry` | `test_tool_registry.py`: siete tools, registro, duplicado y entry point opt-in. | 02 | PASS |
-| R37. Entregable 1: código completo y funcionando construido desde el agent previo. | Wheel/sdist, instalación limpia, suite y demos con exit code 0. | Solo notebook y documentos iniciales. | Todo el paquete | Suite, build, instalación, demos deterministas y ejecución OpenAI completa pasan. El demo vive deliberadamente en `examples/` y se ejecuta desde el checkout, no se incorpora al wheel. | 01-09 | PASS |
-| R38. Entregable 2: README de instalación, configuración y ejecución. | README con entorno limpio, `.env`, config, RAG, run, tres demos, gates, artifacts, traces y límites. | README solo describe el starter y proceso de prompts. | `README.md`, `cli` | `test_documentation.py` valida links y 14 rutas CLI; clean install queda en Fase 09. | 08, 09 | PASS |
-| R39. Entregable 3: descripción del caso, repo/proyecto, objetivo y criterio de cumplimiento. | `docs/case_use.md` consistente con demo y artifacts. | README recomienda Python/FastAPI, sin criterio ejecutable completo. | `docs`, `examples` | `docs/case_use.md`, fixture, comandos y criterios alineados con E2E. | 07, 08 | PASS |
-| R40. Entregable 4: arquitectura, agente principal, roles y estado compartido. | Documento actualizado contra código real y diagrama. | No había documento; Fase 00 creó el diseño futuro. | `docs/architecture.md`, `state`, `agents` | `architecture.md` distingue harness básico, demos deterministas y composición real, y enlaza modelos/transiciones probados. | 00, 03, 08, 09 | PASS |
-| R41. Entregable 5: documentación RAG de fuentes, chunking, embeddings y almacenamiento. | `docs/rag.md`, manifest y parámetros/versiones reales. | No existe RAG; Fase 00 solo define la decisión arquitectónica. | `rag`, `docs/rag.md` | Documento, manifest, config, SQLite y tests alineados; links locales validados. | 05, 08 | PASS |
-| R42. Entregable 6: evidencia de al menos dos tareas con output, fuentes y explicación. | Dos o tres run directories completos, schema válido y narrativa. | El notebook informa dos tareas, pero no pertenecen al sistema/caso final ni tienen RAG. | `examples`, `artifacts`, `docs/evidence` | Cuatro bundles schema 1.0 y narrativa A/B/C validados por `test_documentation.py`/E2E. | 07-09 | PASS |
-| R43. Entregable 7: capturas de observabilidad con al menos una traza completa. | PNGs reales revisados, referenciados a trace id y sin secretos. | No existen. Requiere acción humana final. | Proceso de evidencia humana | Checklist visual y correspondencia screenshot/trace id. | 06-09 | REQUIERE ACCIÓN HUMANA |
-| R44. Entregable 8: reflexión sobre aciertos, fallos, loops/falta de evidencia y mejoras. | `docs/reflection.md` sustentada por eventos/artifacts reales. | El informe legado reflexiona sobre dos corridas, no sobre el sistema final. | `docs/reflection.md`, `artifacts` | Reflexión cita A/B/C y los siete runs reales, incluida la traza completa; declara honestamente la captura pendiente. | 08, 09 | PASS |
-
-## 3. Decisiones vinculantes del proyecto
-
-Estas filas no reemplazan la consigna; hacen trazables las restricciones
-adicionales fijadas para esta implementación.
-
-| requisito | evidencia esperada | estado inicial | módulo responsable | prueba que lo verificará | fase | estado |
-|---|---|---|---|---|---|---|
-| D01. Implementar como paquete Python, no notebook. | Layout `src`, build instalable y notebook legado inalterado. | Solo notebook; no existe `src/` ni packaging. | packaging, `src/coding_agent` | Wheel/sdist e instalación limpia pasan; checksum del notebook legado se conserva. | 01, 09 | PASS |
-| D02. Usar SDK OpenAI directo con Responses API y no OpenAI Agents SDK. | Adaptador aislado y audit de imports/dependencias. | Notebook usa SDK directo pero Chat Completions. | `llm.openai_client` | Unit test con fake SDK; dependencia `openai`, sin Agents SDK. | 01, 09 | PASS |
-| D03. Memoria persistente en SQLite. | Archivo DB, schema/migración y reapertura. | No existe memoria persistente. | `memory.sqlite` | `test_memory_persists_after_repository_is_closed_and_reopened` y aislamiento por proyecto. | 04, 07 | PASS |
-| D04. Vector store local persistente. | `SQLiteVectorStore`, path configurable y reapertura con retrieval igual. | YAML declara path, sin implementación. | `rag.vector_store` | `test_vector_store_persists_and_retrieves_relevant_chunk` y CLI offline. | 05 | PASS |
-| D05. Langfuse con implementación no-op al deshabilitarse o fallar. | Ambos adapters y tarea funcional sin credenciales. | YAML nombra Langfuse; no hay código. | `observability` | `test_noop_accepts_observations_without_swallowing_domain_errors`, fake Langfuse, factory sin credenciales y fallo tolerado. | 06 | PASS |
-| D06. CLI reproducible. | Comandos de config/run/rag y demos documentados/testeados; memoria se demuestra con `demo memory`. | Solo notebook interactivo con `input()`. | `cli` | `test_documentation.py` y el wheel instalado validan la ayuda; A/B/C pasan desde el checkout documentado. | 01, 05, 07-09 | PASS |
-| D07. Repositorio de demostración FastAPI bajo `examples/`. | `examples/fastapi_demo/`, reset seguro y tests propios. | No existe `examples/`. | `examples/fastapi_demo` | Fixture, reset determinista, tests HTTP y 7 E2E A/B/C. | 07 | PASS |
-| D08. Interfaces para LLM, embeddings, web, vector store y tracing con fakes. | Puertos sin imports externos y fakes deterministas. | Notebook instancia OpenAI/Tavily globalmente; demás proveedores no existen. | `llm`, `rag`, `tools.web`, `observability` | Tests OpenAI/web, fake embeddings/store y fake/recording tracing cubren todos los puertos. | 01, 02, 05, 06 | PASS |
-| D09. Tests sin llamadas reales por defecto y evidencia reproducible. | Providers fake, markers opt-in y artifacts con schema. | No hay suite; el informe legado describe ejecuciones manuales. | `tests`, `artifacts` | Suite offline, integración Langfuse opt-in y cuatro bundles schema 1.0. | 01-09 | PASS |
-
-## 4. Resultado final
-
-La auditoría actualizada cierra 39 de 44 requisitos como `PASS`, 2 como `PARTIAL`, 3 como
-`REQUIERE ACCIÓN HUMANA` y ninguno como `FAIL`. Las nueve decisiones vinculantes
-quedan `PASS`. Un fake o un skip valida contratos y fallback, pero no reemplaza
-la ejecución Langfuse exigida por R29/R35/R43. El detalle, los comandos y los
-gates de calidad que no alcanzaron el umbral están en
-[`final_audit.md`](final_audit.md).
+| ID | Requisito | Evidencia principal | Estado |
+|---|---|---|---|
+| R01 | Evolucionar el coding agent previo sin framework de orquestación. | `harness/`, `orchestrator/`, dependencias de `pyproject.toml` | PASS |
+| R02 | Agente principal y cinco subagentes con responsabilidades. | `agents/`, `orchestrator/main.py`, `test_orchestrator.py` | PASS |
+| R03 | Estado compartido con pedido, avance, resultados, fuentes, cambios y observaciones. | `state/models.py`, artifacts A/B/C | PASS |
+| R04 | Memoria persistente separada por proyecto. | `memory/sqlite.py`, `test_memory.py`, tarea B | PASS |
+| R05 | Chunking, embeddings y almacenamiento vectorial. | `rag/`, `test_rag_*.py` | PASS |
+| R06 | Recuperar y mostrar fuentes antes de decidir. | `ResearchService`, tarea A y corrida real | PASS |
+| R07 | Separar repository, memory, RAG, web e inference. | `EvidenceSource`, `test_research_fallback.py` | PASS |
+| R08 | RAG primero y web como fallback confiable. | `rag/research.py`, `tools/tavily.py` | PASS |
+| R09 | Resumen y presupuesto de contexto. | `context/manager.py`, `test_context_manager.py` | PASS |
+| R10 | Detectar repetición, cambiar estrategia o detenerse. | `context/progress.py`, tarea C | PASS |
+| R11 | Explicar falta de evidencia. | estados `NO_EVIDENCE` y `STOPPED_NO_EVIDENCE` | PASS |
+| R12 | Validar configuración antes de cada tool call. | `policies/gateway.py`, `test_tool_gateway.py` | PASS |
+| R13 | Policies de lectura, escritura, comandos y aprobación. | `agent.config.yaml`, tests de policy | PASS |
+| R14 | Integrar observabilidad y registrar el ciclo completo. | `observability/`, corrida real con trace id | PASS |
+| R15 | Caso de uso concreto y verificable Python/FastAPI. | `docs/case_use.md`, fixture y diff real | PASS |
+| R16 | Probar tarea RAG con fuentes. | tarea A | PASS |
+| R17 | Probar memoria del proyecto. | tarea B, dos sesiones | PASS |
+| R18 | Probar cambio de estrategia o detención. | tarea C | PASS |
+| R19 | Agregar tools sin modificar el núcleo. | `ToolRegistry.discover`, `test_tool_registry.py` | PASS |
+| D01 | Código completo funcionando. | 134 tests, Ruff, mypy y build con exit 0 | PASS |
+| D02 | README de instalación, configuración y ejecución. | `README.md` | PASS |
+| D03 | Descripción del caso y criterio de éxito. | `docs/case_use.md` | PASS |
+| D04 | Explicación de arquitectura y estado. | `docs/architecture.md` | PASS |
+| D05 | Documentación RAG. | `docs/rag.md` | PASS |
+| D06 | Evidencia de al menos dos tareas. | `docs/evidence/README.md` | PASS |
+| D07 | Captura de una traza completa. | `docs/evidence/screenshots/` | PENDIENTE HUMANO |
+| D08 | Reflexión breve. | `docs/reflection.md` | PASS |
