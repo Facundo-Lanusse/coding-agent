@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Annotated, NoReturn
+from uuid import uuid4
 
 import typer
 
@@ -25,6 +26,7 @@ from coding_agent.models import (
     ApprovalRequest,
     RunStatus,
 )
+from coding_agent.observability import ObservationKind, TracedLLMClient, create_tracer
 from coding_agent.policies import AuthorizedToolGateway
 from coding_agent.rag import (
     CollectionSpec,
@@ -113,33 +115,69 @@ def run_agent(
         typer.echo("OPENAI_API_KEY is required to use the real OpenAI adapter.", err=True)
         raise typer.Exit(code=2)
 
-    llm = OpenAIResponsesClient(
+    tracer = create_tracer(
+        loaded.observability,
+        trace_seed=f"harness-{uuid4().hex}",
+    )
+    raw_llm = OpenAIResponsesClient(
         model=loaded.llm.model,
         max_output_tokens=loaded.llm.max_output_tokens,
         store_responses=loaded.llm.store_responses,
         api_key=settings.openai_api_key.get_secret_value(),
     )
+    llm = TracedLLMClient(raw_llm, tracer, configured_model=loaded.llm.model)
     approval_provider = TyperApprovalProvider()
     registry = build_default_registry()
     gateway = AuthorizedToolGateway(
         registry,
         config_path=config,
         approval_provider=approval_provider,
+        tracer=tracer,
     )
     harness = CodingAgentHarness(
         llm,
         tools=gateway.bindings(ToolRole.IMPLEMENTER),
         approval_provider=approval_provider,
     )
-    result = harness.run(
-        AgentRunRequest(
-            task=task,
-            plan_mode=plan,
-            supervision_mode=supervision,
-            max_iterations=loaded.execution.max_agent_iterations,
-        )
-    )
+    try:
+        with tracer.observe(
+            "coding-agent.run",
+            kind=ObservationKind.TASK,
+            input={"task": task},
+            metadata={
+                "model": loaded.llm.model,
+                "plan_mode": plan,
+                "supervision_mode": supervision,
+                "max_iterations": loaded.execution.max_agent_iterations,
+            },
+        ) as root_observation:
+            result = harness.run(
+                AgentRunRequest(
+                    task=task,
+                    plan_mode=plan,
+                    supervision_mode=supervision,
+                    max_iterations=loaded.execution.max_agent_iterations,
+                )
+            )
+            root_observation.update(
+                output={
+                    "status": result.status.value,
+                    "final_answer": result.final_answer,
+                },
+                metadata={"metrics": result.metrics.model_dump(mode="json")},
+            )
+    finally:
+        tracer.flush()
+
     typer.echo(result.model_dump_json(indent=2))
+    if tracer.trace_id is not None:
+        typer.echo(f"Langfuse trace id: {tracer.trace_id}", err=True)
+    elif loaded.observability.enabled:
+        typer.echo(
+            "Langfuse tracing inactive; verify LANGFUSE_PUBLIC_KEY and "
+            "LANGFUSE_SECRET_KEY in this shell.",
+            err=True,
+        )
     if result.status is not RunStatus.COMPLETED:
         raise typer.Exit(code=2)
 

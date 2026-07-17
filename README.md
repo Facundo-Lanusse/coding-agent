@@ -35,17 +35,40 @@ La descripción y los criterios están en [docs/case_use.md](docs/case_use.md).
 
 ## Instalación
 
-```bash
-python3.11 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
-```
-
-También se puede usar:
+La forma recomendada prepara los dos entornos aislados: `.venv` para el agente
+y `examples/fastapi_demo/seed/.venv` para ejecutar los tests de la fixture. La
+primera instalación requiere acceso a Internet para descargar dependencias.
 
 ```bash
 make bootstrap
+```
+
+`make` no puede activar un entorno en la terminal que lo invocó. Por eso no
+aparecerá `(.venv)` en el prompt, pero no es necesario: los targets usan siempre
+los ejecutables dentro de los venv. Comprobar la instalación no realiza llamadas
+externas:
+
+```bash
+make doctor
+```
+
+Flujo local completo, sin activar entornos:
+
+```bash
+make bootstrap   # instala agente y fixture FastAPI
+make check       # tests, Ruff y mypy del proyecto
+make demo-test   # tests HTTP de la fixture FastAPI
+make config      # valida agent.config.yaml
+make rag-ingest  # ingesta RAG reproducible, sin API externa
+```
+
+Si se prefiere ejecutar `coding-agent` sin el prefijo `.venv/bin/`, la
+activación manual es opcional:
+
+```bash
+source .venv/bin/activate
+coding-agent --help
+deactivate
 ```
 
 ## Configuración
@@ -54,7 +77,10 @@ make bootstrap
 realiza llamadas externas:
 
 ```bash
-coding-agent config validate --config agent.config.yaml
+make config
+
+# Equivalente sin activar el venv:
+.venv/bin/coding-agent config validate --config agent.config.yaml
 ```
 
 La policy se recarga y valida dentro de `AuthorizedToolGateway` antes de cada
@@ -64,11 +90,11 @@ comandos como `git push`; instalaciones y commits requieren aprobación.
 ## RAG reproducible sin red
 
 ```bash
-coding-agent rag ingest rag_sources \
+.venv/bin/coding-agent rag ingest rag_sources \
   --config agent.config.yaml \
   --fake-embeddings
 
-coding-agent rag query "dependencies en FastAPI" \
+.venv/bin/coding-agent rag query "dependencies en FastAPI" \
   --config agent.config.yaml \
   --fake-embeddings
 ```
@@ -83,15 +109,20 @@ El harness base continúa disponible con plan mode, supervisión, tools y límit
 iteraciones:
 
 ```bash
-coding-agent run \
+.venv/bin/coding-agent run \
   --config agent.config.yaml \
   --task "Analizá la estructura del proyecto" \
   --plan \
   --supervision
 ```
 
-Requiere `OPENAI_API_KEY`. La demo que prueba la arquitectura completa es la
-siguiente.
+Requiere `OPENAI_API_KEY`. Cuando `LANGFUSE_PUBLIC_KEY` y
+`LANGFUSE_SECRET_KEY` están exportadas en la misma terminal, cada ejecución crea
+una traza `coding-agent.run` con las generaciones LLM, tools y decisiones de
+policy, hace flush antes de terminar e imprime su trace id. Sin credenciales de
+Langfuse, el agente sigue funcionando y muestra que el tracing está inactivo.
+
+La demo que prueba la arquitectura multiagente completa es la siguiente.
 
 ## Demo real de cinco agentes
 
@@ -105,15 +136,7 @@ export LANGFUSE_SECRET_KEY="..."
 export LANGFUSE_BASE_URL="https://cloud.langfuse.com"
 ```
 
-Preparar el entorno aislado del repositorio FastAPI si todavía no existe:
-
-```bash
-python3.11 -m venv examples/fastapi_demo/seed/.venv
-examples/fastapi_demo/seed/.venv/bin/python -m pip install -e \
-  "examples/fastapi_demo/seed[dev]"
-```
-
-Ejecutar la tarea con límites explícitos:
+Después de `make bootstrap`, ejecutar la tarea con límites explícitos:
 
 ```bash
 make demo-real
@@ -130,6 +153,7 @@ sobre `tmp/demo-runtime/` y escribe un bundle sanitizado bajo
 
 ```bash
 make check
+make demo-test
 make coverage
 make build
 ```
@@ -137,9 +161,9 @@ make build
 Equivalentes principales:
 
 ```bash
-pytest -q
-ruff check src tests examples
-mypy src tests
+.venv/bin/python -m pytest -q
+.venv/bin/ruff check src tests examples
+.venv/bin/mypy src tests
 ```
 
 Los tests unitarios usan fakes y no llaman a OpenAI, Tavily ni Langfuse. La

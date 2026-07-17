@@ -94,7 +94,7 @@ estructurada también debe ser breve.
 Verificación offline posterior:
 
 - tests focalizados de backend y runtime: 12 pasaron;
-- `make check`: 135 tests pasaron y 1 integración Langfuse se omitió por falta
+- `make check`: 136 tests pasaron y 1 integración Langfuse se omitió por falta
   de credenciales; Ruff y mypy pasaron;
 - la corrida real `real-openai-20260717-003912` terminó `completed`: los cinco
   roles finalizaron, `pytest -q` tuvo exit 0, Reviewer aceptó y Langfuse emitió

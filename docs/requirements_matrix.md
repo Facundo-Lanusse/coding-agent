@@ -24,7 +24,7 @@ existe código y prueba o artifact concreto.
 | R17 | Probar memoria del proyecto. | tarea B, dos sesiones | PASS |
 | R18 | Probar cambio de estrategia o detención. | tarea C | PASS |
 | R19 | Agregar tools sin modificar el núcleo. | `ToolRegistry.discover`, `test_tool_registry.py` | PASS |
-| D01 | Código completo funcionando. | 135 tests, Ruff, mypy y build con exit 0 | PASS |
+| D01 | Código completo funcionando. | 136 tests, Ruff, mypy y build con exit 0 | PASS |
 | D02 | README de instalación, configuración y ejecución. | `README.md` | PASS |
 | D03 | Descripción del caso y criterio de éxito. | `docs/case_use.md` | PASS |
 | D04 | Explicación de arquitectura y estado. | `docs/architecture.md` | PASS |
