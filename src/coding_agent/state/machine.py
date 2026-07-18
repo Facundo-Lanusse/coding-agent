@@ -113,14 +113,17 @@ class TaskStateMachine:
         return state.model_copy(update=values)
 
     def accumulate(self, state: TaskState, result: AgentResult) -> TaskState:
+        evidence = tuple(
+            {item.evidence_id: item for item in (*state.evidence, *result.evidence)}.values()
+        )
         sources = tuple(
-            dict.fromkeys((*state.sources_consulted, *(e.source for e in result.evidence)))
+            dict.fromkeys((*state.sources_consulted, *(item.source for item in evidence)))
         )
         files_read = tuple(dict.fromkeys((*state.files_read, *result.files_read)))
         return state.model_copy(
             update={
                 "agent_results": (*state.agent_results, result),
-                "evidence": (*state.evidence, *result.evidence),
+                "evidence": evidence,
                 "sources_consulted": sources,
                 "files_read": files_read,
                 "files_modified": (*state.files_modified, *result.file_changes),

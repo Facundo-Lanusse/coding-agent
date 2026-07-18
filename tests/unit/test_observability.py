@@ -186,6 +186,18 @@ def test_tracing_failure_never_breaks_domain_work() -> None:
     assert result == 42
 
 
+def test_langfuse_status_message_is_always_text() -> None:
+    client = FakeLangfuseClient()
+    tracer = LangfuseTracer(client, Sanitizer(environment={}))
+
+    with tracer.observe("task.run") as observation:
+        observation.update(error={"code": "failed"})
+
+    updates = client.entries[0]["updates"]
+    assert isinstance(updates, list)
+    assert updates[0]["status_message"] == "{'code': 'failed'}"
+
+
 def test_factory_uses_noop_without_credentials_or_sdk() -> None:
     config = ObservabilityConfig(
         provider="langfuse",

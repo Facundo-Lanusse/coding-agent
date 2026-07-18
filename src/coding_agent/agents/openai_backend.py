@@ -158,6 +158,13 @@ class OpenAIAgentBackend:
                     approvals=tuple(approvals),
                     errors=(*errors, ErrorInfo(code=exc.code, message=str(exc))),
                 )
+            available_definitions = definitions
+            if agent is AgentName.IMPLEMENTER and iteration > 2:
+                available_definitions = tuple(
+                    definition
+                    for definition in definitions
+                    if definition.name in {"write_file", SUBMIT_TOOL}
+                )
             response = self._llm.respond(
                 LLMRequest(
                     instructions=role_instructions(
@@ -168,7 +175,7 @@ class OpenAIAgentBackend:
                     input=tuple(run_input),
                     tools=(submission_definition,)
                     if iteration == self._max_iterations
-                    else definitions,
+                    else available_definitions,
                 )
             )
             run_input.extend(response.continuation)
@@ -329,6 +336,17 @@ class OpenAIAgentBackend:
                 detector.note_progress(
                     evidence_ids=tuple(item.evidence_id for item in new_evidence),
                     change_ids=((str(change.path),) if change is not None else ()),
+                )
+
+            if agent is AgentName.IMPLEMENTER and iteration == 2 and not file_changes:
+                run_input.append(
+                    MessageInput(
+                        role=MessageRole.USER,
+                        content=(
+                            "Inspection limit reached. Apply the required edits now with "
+                            "write_file; do not defer them to Reviewer or CI."
+                        ),
+                    )
                 )
 
             if iteration == self._max_iterations - 1:

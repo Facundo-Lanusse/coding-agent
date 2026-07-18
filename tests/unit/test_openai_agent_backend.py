@@ -56,12 +56,38 @@ def _read_binding() -> ToolBinding:
     )
 
 
-def _submit_call(*, criteria_met: bool | None = None) -> FunctionCall:
+def _write_binding() -> ToolBinding:
+    return ToolBinding(
+        definition=ToolDefinition(
+            name="write_file",
+            description="Write one file.",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string"},
+                    "content": {"type": "string"},
+                },
+                "required": ["path", "content"],
+                "additionalProperties": False,
+            },
+        ),
+        handler=lambda call: ToolResult(
+            call_id=call.call_id,
+            tool_name=call.name,
+            status=ToolStatus.EXECUTED,
+            output="File written.",
+        ),
+    )
+
+
+def _submit_call(
+    *, status: str = "succeeded", criteria_met: bool | None = None
+) -> FunctionCall:
     return FunctionCall(
         call_id="submit-1",
         name="submit_agent_result",
         arguments={
-            "status": "succeeded",
+            "status": status,
             "summary": "Repository evidence inspected.",
             "observations": ["FastAPI entry point found."],
             "decision_reason": "Use the inspected entry point as evidence.",
@@ -104,6 +130,35 @@ def test_openai_backend_executes_tools_and_returns_structured_evidence() -> None
     assert "submit_agent_result" in {
         tool.name for tool in llm.requests[0].tools
     }
+
+
+def test_explorer_cannot_discard_collected_evidence_while_waiting_for_rag() -> None:
+    llm = SequenceLLM(
+        [
+            LLMResponse(
+                tool_calls=(
+                    FunctionCall(
+                        call_id="read-1",
+                        name="read_file",
+                        arguments={"path": "app/main.py"},
+                    ),
+                )
+            ),
+            LLMResponse(tool_calls=(_submit_call(status="no_evidence"),)),
+        ]
+    )
+    backend = OpenAIAgentBackend(llm, call_budget=LLMCallBudget(5))
+
+    result = backend.run(
+        agent=AgentName.EXPLORER,
+        responsibility="Inspect the repository.",
+        context=_context(),
+        tools=ScopedToolbox((_read_binding(),), allowed_names=frozenset({"read_file"})),
+    )
+
+    assert result.status is AgentResultStatus.SUCCEEDED
+    assert result.evidence
+    assert "RAG belongs to the Researcher" in llm.requests[0].instructions
 
 
 def test_successful_tester_submission_without_real_check_is_rejected() -> None:
@@ -269,6 +324,64 @@ def test_implementer_contract_owns_edits_and_preserves_submission_turn() -> None
     assert "This role owns repository edits" in instructions
     assert "use no more than two turns for inspection" in instructions
     assert "at most six short observations" in instructions
+
+
+def test_implementer_must_stop_inspecting_and_write_after_two_turns() -> None:
+    llm = SequenceLLM(
+        [
+            LLMResponse(
+                tool_calls=(
+                    FunctionCall(
+                        call_id="read-1",
+                        name="read_file",
+                        arguments={"path": "app/main.py"},
+                    ),
+                )
+            ),
+            LLMResponse(
+                tool_calls=(
+                    FunctionCall(
+                        call_id="read-2",
+                        name="read_file",
+                        arguments={"path": "tests/test_health.py"},
+                    ),
+                )
+            ),
+            LLMResponse(
+                tool_calls=(
+                    FunctionCall(
+                        call_id="write-1",
+                        name="write_file",
+                        arguments={"path": "app/main.py", "content": "updated\n"},
+                    ),
+                )
+            ),
+            LLMResponse(tool_calls=(_submit_call(),)),
+        ]
+    )
+    backend = OpenAIAgentBackend(
+        llm,
+        call_budget=LLMCallBudget(5),
+        max_iterations_per_agent=4,
+    )
+
+    result = backend.run(
+        agent=AgentName.IMPLEMENTER,
+        responsibility="Implement the requested endpoint.",
+        context=_context(),
+        tools=ScopedToolbox(
+            (_read_binding(), _write_binding()),
+            allowed_names=frozenset({"read_file", "write_file"}),
+        ),
+    )
+
+    assert result.status is AgentResultStatus.SUCCEEDED
+    assert result.file_changes
+    assert {tool.name for tool in llm.requests[2].tools} == {
+        "write_file",
+        "submit_agent_result",
+    }
+    assert "Inspection limit reached" in str(llm.requests[2].input[-1])
 
 
 def test_tester_contract_requires_direct_argv_without_shell_wrapper() -> None:

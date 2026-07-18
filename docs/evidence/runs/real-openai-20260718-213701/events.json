@@ -1,0 +1,67 @@
+[
+  {
+    "detail": "received -> planning",
+    "event_type": "plan_created",
+    "outcome": "planning"
+  },
+  {
+    "detail": "planning -> exploring",
+    "event_type": "execution_started",
+    "outcome": "exploring"
+  },
+  {
+    "detail": "exploring -> stopped_no_evidence",
+    "event_type": "insufficient_evidence",
+    "outcome": "stopped_no_evidence"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  },
+  {
+    "detail": "policy.allowed: Tool call is allowed by role and resource policies.",
+    "event_type": "policy",
+    "outcome": "allowed"
+  }
+]

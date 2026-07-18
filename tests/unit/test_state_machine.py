@@ -5,6 +5,8 @@ from pydantic import ValidationError
 
 from coding_agent.state import (
     AgentName,
+    AgentResult,
+    AgentResultStatus,
     Evidence,
     EvidenceSource,
     InvalidTransitionError,
@@ -61,3 +63,25 @@ def test_inference_requires_explicit_supporting_evidence() -> None:
             reference="agent reasoning",
             content="The endpoint probably needs authentication.",
         )
+
+
+def test_accumulate_deduplicates_evidence_shared_between_agents() -> None:
+    evidence = Evidence(
+        evidence_id="repository-main",
+        source=EvidenceSource.REPOSITORY,
+        reference="app/main.py",
+        content="FastAPI application.",
+    )
+    state = TaskState(request=request(), evidence=(evidence,))
+
+    accumulated = TaskStateMachine().accumulate(
+        state,
+        AgentResult(
+            agent=AgentName.RESEARCHER,
+            status=AgentResultStatus.SUCCEEDED,
+            summary="Evidence reused.",
+            evidence=(evidence,),
+        ),
+    )
+
+    assert accumulated.evidence == (evidence,)

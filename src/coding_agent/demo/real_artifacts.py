@@ -20,7 +20,7 @@ from coding_agent.memory import (
     MemorySourceType,
 )
 from coding_agent.policies import AuthorizedToolGateway
-from coding_agent.state import EvidenceSource, TaskState
+from coding_agent.state import EvidenceSource, TaskState, TaskStatus
 
 
 def build_real_artifact(
@@ -116,6 +116,8 @@ def build_real_artifact(
 
 
 def persist_verified_memory(repository: MemoryRepository, state: TaskState) -> None:
+    if state.status is not TaskStatus.COMPLETED:
+        return
     now = datetime.now(UTC)
     stale_after = now + timedelta(days=30)
     records: list[MemoryRecord] = []

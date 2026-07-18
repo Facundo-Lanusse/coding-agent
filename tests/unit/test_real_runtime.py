@@ -242,3 +242,27 @@ def test_runtime_builds_artifact_and_persists_only_classified_memory(tmp_path: P
     assert _secret(SecretStr("hidden")) == "hidden"
     with pytest.raises(RealDemoError, match="unavailable"):
         _secret(object())
+
+
+def test_failed_runs_are_not_persisted_as_verified_memory(tmp_path: Path) -> None:
+    state = TaskState(
+        request=TaskRequest(
+            task_id="failed-run",
+            project_id="fastapi-demo",
+            session_id="failed-session",
+            original_request="Inspect the repository.",
+            workspace=tmp_path,
+        ),
+        status=TaskStatus.STOPPED_NO_EVIDENCE,
+        files_read=(Path("app/main.py"),),
+    )
+    repository = SQLiteMemoryRepository(tmp_path / "memory.sqlite3")
+    try:
+        persist_verified_memory(repository, state)
+        matches = repository.search(
+            MemoryQuery(project_id=state.request.project_id, text="repository", limit=10)
+        )
+    finally:
+        repository.close()
+
+    assert matches == ()

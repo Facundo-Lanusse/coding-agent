@@ -95,7 +95,8 @@ def role_instructions(
         AgentName.EXPLORER: (
             "List only focused project paths, then read independent relevant files in parallel. "
             "Use at most four work-tool calls in one response. Ignore virtual environments, "
-            "caches and generated metadata. Base every architecture statement on tool output."
+            "caches and generated metadata. Base every architecture statement on tool output. "
+            "RAG belongs to the Researcher; submit succeeded once repository evidence is found."
         ),
         AgentName.RESEARCHER: (
             "Use the RAG/web evidence already supplied in context. Web is only a fallback tool. "
@@ -174,6 +175,12 @@ def build_agent_result(
 ) -> AgentResult:
     status = AgentResultStatus(submission.status.value)
     all_evidence = _unique_evidence((*context.evidence, *evidence))
+    if (
+        agent is AgentName.EXPLORER
+        and status is AgentResultStatus.NO_EVIDENCE
+        and all_evidence
+    ):
+        status = AgentResultStatus.SUCCEEDED
     if agent is AgentName.RESEARCHER and status is AgentResultStatus.SUCCEEDED and not all_evidence:
         status = AgentResultStatus.NO_EVIDENCE
     if (
