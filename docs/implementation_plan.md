@@ -1,5 +1,9 @@
 # Plan de implementación de la entrega
 
+> Documento histórico de la preparación de `entrega-tp`. La branch fue
+> fusionada en `main` mediante `3bed611` el 2026-07-20; el estado actual y las
+> corridas posteriores están en `README.md` y `docs/evidence/README.md`.
+
 ## Objetivo
 
 Mantener en `main` el proyecto profesional completo y producir en

@@ -63,12 +63,14 @@ make build
 ## Integración Langfuse
 
 ```bash
-pytest -m langfuse_integration -q
+.venv/bin/python -m pytest -m langfuse_integration -q
 ```
 
 Sin `LANGFUSE_PUBLIC_KEY` y `LANGFUSE_SECRET_KEY` debe verse un skip, no un
 PASS inventado. Con credenciales, conservar el output y el trace id para la
 evidencia final.
+
+Verificación manual del 2026-07-20: `1 passed, 141 deselected`, exit 0.
 
 ## Fixture FastAPI
 
@@ -76,7 +78,7 @@ La fixture declara sus propias dependencias en
 `examples/fastapi_demo/seed/pyproject.toml`. Para ejecutar sus tests HTTP:
 
 ```bash
-python3.11 -m venv examples/fastapi_demo/seed/.venv
+python3 -m venv examples/fastapi_demo/seed/.venv
 examples/fastapi_demo/seed/.venv/bin/python -m pip install -e \
   "examples/fastapi_demo/seed[dev]"
 examples/fastapi_demo/seed/.venv/bin/python -m pytest \
@@ -87,14 +89,14 @@ La demo real usa ese binario desde `make demo-real`.
 
 ## Evidencia a conservar
 
-Para la presentación posterior hacen falta los outputs completos de:
+Para la entrega hacen falta los outputs completos de:
 
 1. `git branch --show-current`;
 2. `make check`;
 3. `make coverage`;
 4. tests HTTP de la fixture;
 5. `make build`;
-6. `git diff --stat main...entrega-tp`;
-7. `git diff --name-status main...entrega-tp`;
+6. `git show --stat --oneline --first-parent 3bed611`;
+7. `git diff --name-status 3bed611^1 3bed611^2`;
 8. una corrida `make demo-real` o el bundle real ya existente;
 9. capturas de la traza Langfuse completa.

@@ -51,7 +51,7 @@ vez y bloquea la tarea sin ejecutar un tercer intento idéntico.
 - [comandos](runs/scenario-c-safety/commands.json)
 - [resumen](runs/scenario-c-safety/summary.md)
 
-## Corrida externa completa
+## Primera corrida externa completa con capturas
 
 Directorio:
 [real-openai-20260717-003912](runs/real-openai-20260717-003912/).
@@ -70,6 +70,20 @@ Resultado real:
 Consultar [run.json](runs/real-openai-20260717-003912/run.json),
 [summary.md](runs/real-openai-20260717-003912/summary.md) y
 [commands.json](runs/real-openai-20260717-003912/commands.json).
+
+## Corridas externas posteriores
+
+El 2026-07-18 se conservaron cinco ejecuciones reales adicionales. Cada bundle
+declara `provider_mode=real`, observabilidad Langfuse, estado terminal y trace id;
+los intentos no completados se mantienen como evidencia de límites reales.
+
+| Corrida | Estado | Trace id |
+|---|---|---|
+| [real-openai-20260718-212639](runs/real-openai-20260718-212639/) | `blocked` | `886b6fa3ad3c195477391980b7395f9a` |
+| [real-openai-20260718-213510](runs/real-openai-20260718-213510/) | `stopped_no_evidence` | `48586216bfd779891534aa3033c4d0df` |
+| [real-openai-20260718-213701](runs/real-openai-20260718-213701/) | `stopped_no_evidence` | `922d2beea164378ec705d091faa0180f` |
+| [real-openai-20260718-215231](runs/real-openai-20260718-215231/) | `blocked` | `ed47bc7b9d2125099f7b4cef152b76d7` |
+| [real-openai-20260718-215957](runs/real-openai-20260718-215957/) | `completed`; `pytest -q` exit 0; Reviewer acepta | `f31f0423f5acca31441bcadbb9eaaa3d` |
 
 ## Capturas Langfuse
 

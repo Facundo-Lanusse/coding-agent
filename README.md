@@ -184,10 +184,10 @@ gateway dependen de la interfaz común, no de clases concretas. Los tests en
 - tarea A: RAG y cambio `/health/ready`;
 - tarea B: memoria persistente entre dos sesiones y cambio `/version`;
 - tarea C: denegación, aprobación y detención por no-progreso;
-- corrida real completa con trace id Langfuse.
+- corridas reales con trace ids Langfuse, incluidos intentos bloqueados.
 
-Las capturas de la UI todavía son una acción humana y no se presentan como
-completadas. El procedimiento está en
+Las capturas verificadas de la corrida `real-openai-20260717-003912` están
+versionadas. El detalle está en
 [docs/evidence/screenshots/README.md](docs/evidence/screenshots/README.md).
 
 ## Documentación mínima de entrega
@@ -202,9 +202,10 @@ completadas. El procedimiento está en
 
 ## Limitaciones honestas
 
-- La única corrida externa completa conservada tiene trace id
-  `cd6e9589a8074d1d52c738d79373c128` y capturas verificadas de su UI.
+- Hay dos corridas externas completas conservadas. La corrida
+  `real-openai-20260717-003912` tiene capturas verificadas de su UI; la corrida
+  `real-openai-20260718-215957` conserva su trace id y bundle sanitizado.
 - Tavily puede registrar cero búsquedas si el RAG ya aporta evidencia suficiente.
-- Los bundles reproducibles A/B/C son evidencia histórica sanitizada; la branch
-  de entrega conserva el runtime real y los tests deterministas, no su generador
+- Los bundles deterministas A/B/C son evidencia histórica sanitizada; el
+  repositorio entregado conserva el runtime real y los tests, no su generador
   hardcodeado.

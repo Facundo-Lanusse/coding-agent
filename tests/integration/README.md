@@ -1,6 +1,10 @@
 # Integration tests
 
-Fase 01 uses deterministic unit tests only. Provider-backed integration tests
-will be added in later phases and will require an explicit opt-in; the default
-test suite must remain offline and credential-free.
+La suite predeterminada permanece offline y sin credenciales. La integración
+opt-in con Langfuse requiere sus claves en el entorno y se ejecuta con:
 
+```bash
+.venv/bin/python -m pytest -m langfuse_integration -q
+```
+
+Sin credenciales, pytest informa un `skip` explícito.

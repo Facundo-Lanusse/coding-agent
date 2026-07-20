@@ -11,6 +11,7 @@ from typer.testing import CliRunner
 from coding_agent.cli import app
 
 ROOT = Path(__file__).resolve().parents[2]
+RUNS_DIRECTORY = ROOT / "docs/evidence/runs"
 REQUIRED_DOCUMENTS = (
     ROOT / "README.md",
     ROOT / "docs/case_use.md",
@@ -21,13 +22,6 @@ REQUIRED_DOCUMENTS = (
     ROOT / "docs/requirements_matrix.md",
     ROOT / "docs/evidence/README.md",
     ROOT / "docs/evidence/screenshots/README.md",
-)
-RUN_IDS = (
-    "scenario-a-rag",
-    "scenario-b-session-1",
-    "scenario-b-session-2",
-    "scenario-c-safety",
-    "real-openai-20260717-003912",
 )
 TRACE_ID = "cd6e9589a8074d1d52c738d79373c128"
 REQUIRED_SCREENSHOTS = (
@@ -52,10 +46,10 @@ MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 def test_required_documents_and_artifact_bundles_exist() -> None:
     assert all(path.is_file() for path in REQUIRED_DOCUMENTS)
     assert all(path.is_file() and path.stat().st_size > 0 for path in REQUIRED_SCREENSHOTS)
-    for run_id in RUN_IDS:
-        run_directory = ROOT / "docs/evidence/runs" / run_id
-        assert run_directory.is_dir()
+    evidence_index = (ROOT / "docs/evidence/README.md").read_text(encoding="utf-8")
+    for run_directory in sorted(path for path in RUNS_DIRECTORY.iterdir() if path.is_dir()):
         assert ARTIFACT_FILES.issubset(path.name for path in run_directory.iterdir())
+        assert run_directory.name in evidence_index
 
 
 def test_local_markdown_links_resolve() -> None:

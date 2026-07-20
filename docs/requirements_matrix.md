@@ -18,13 +18,13 @@ existe código y prueba o artifact concreto.
 | R11 | Explicar falta de evidencia. | estados `NO_EVIDENCE` y `STOPPED_NO_EVIDENCE` | PASS |
 | R12 | Validar configuración antes de cada tool call. | `policies/gateway.py`, `test_tool_gateway.py` | PASS |
 | R13 | Policies de lectura, escritura, comandos y aprobación. | `agent.config.yaml`, tests de policy | PASS |
-| R14 | Integrar observabilidad y registrar el ciclo completo. | `observability/`, corrida real con trace id | PASS |
+| R14 | Integrar observabilidad y registrar el ciclo completo. | `observability/`, integración Langfuse verificada y corridas reales con trace id | PASS |
 | R15 | Caso de uso concreto y verificable Python/FastAPI. | `docs/case_use.md`, fixture y diff real | PASS |
 | R16 | Probar tarea RAG con fuentes. | tarea A | PASS |
 | R17 | Probar memoria del proyecto. | tarea B, dos sesiones | PASS |
 | R18 | Probar cambio de estrategia o detención. | tarea C | PASS |
 | R19 | Agregar tools sin modificar el núcleo. | `ToolRegistry.discover`, `test_tool_registry.py` | PASS |
-| D01 | Código completo funcionando. | 136 tests, Ruff, mypy y build con exit 0 | PASS |
+| D01 | Código completo funcionando. | `make check`, `make coverage` y `make build` verificados el 2026-07-20 | PASS |
 | D02 | README de instalación, configuración y ejecución. | `README.md` | PASS |
 | D03 | Descripción del caso y criterio de éxito. | `docs/case_use.md` | PASS |
 | D04 | Explicación de arquitectura y estado. | `docs/architecture.md` | PASS |

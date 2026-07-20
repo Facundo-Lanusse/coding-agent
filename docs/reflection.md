@@ -41,6 +41,12 @@ el diff mínimo. El reset mantuvo el workspace aislado y la memoria recuperó
 resultados históricos sin desplazar la evidencia actual. La traza y su metadata
 quedaron preservadas mediante capturas verificadas de la UI Langfuse.
 
+El 2026-07-18 se conservaron cinco corridas reales adicionales: dos terminaron
+`blocked`, dos `stopped_no_evidence` y `real-openai-20260718-215957` volvió a
+completar los cinco roles, ejecutar `pytest -q` con exit 0 y obtener aceptación
+de Reviewer. Mantener también los intentos fallidos permite auditar los límites
+de evidencia y ejecución sin presentarlos como éxitos.
+
 Los escenarios deterministas usan `compileall` y un contrato estático para no
 depender del entorno FastAPI. La corrida real sí ejecutó los tres tests HTTP con
 `TestClient` en el entorno aislado del demo.
@@ -57,10 +63,11 @@ La primera corrida real demostró además el límite de iteraciones: emitió
 A-B-A-B y fases estancadas permanecen demostradas por unit tests.
 
 El sistema también tiene un terminal `STOPPED_NO_EVIDENCE` y tests de Research
-sin fuentes, pero ninguna de las tres demos deterministas terminó allí. La
-ejecución real completa ya está preservada; quedan pendientes únicamente sus
-capturas verificadas desde la UI. Los intentos bloqueados y sus trace ids no se
-simularon ni se ocultaron.
+sin fuentes. Ninguna de las tres demos deterministas terminó allí, pero las
+corridas reales `real-openai-20260718-213510` y
+`real-openai-20260718-213701` sí lo hicieron. Las capturas verificadas de la
+primera ejecución completa y los bundles con trace ids de todos los intentos
+están preservados; los fallos no se simularon ni se ocultaron.
 
 ## Decisiones de estrategia
 
