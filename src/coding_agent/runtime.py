@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-import hashlib
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
 
 from coding_agent.agents import (
@@ -19,23 +18,14 @@ from coding_agent.approval import ApprovalProvider
 from coding_agent.config import AgentConfig, RuntimeSettings, load_config
 from coding_agent.context import ContextBudget, ContextManager, ExtractiveSummaryProvider
 from coding_agent.demo import DemoRun, FixtureResetter, snapshot
-from coding_agent.demo.artifacts import (
-    ArtifactCommand,
-    ArtifactEvent,
-    ArtifactSource,
-    ArtifactWriter,
-    RunArtifact,
+from coding_agent.demo.artifacts import ArtifactWriter
+from coding_agent.demo.real_artifacts import (
+    build_real_artifact,
+    final_summary,
+    persist_verified_memory,
 )
 from coding_agent.llm import OpenAIResponsesClient
-from coding_agent.memory import (
-    MemoryCategory,
-    MemoryKind,
-    MemoryQuery,
-    MemoryRecord,
-    MemoryRepository,
-    MemorySourceType,
-    SQLiteMemoryRepository,
-)
+from coding_agent.memory import MemoryQuery, MemoryRepository, SQLiteMemoryRepository
 from coding_agent.observability import (
     LangfuseTracer,
     ObservationKind,
@@ -265,9 +255,9 @@ def run_real_demo(
                     summary_provider=ExtractiveSummaryProvider(),
                 ),
             ).run(request)
-            _persist_verified_memory(memory, state)
+            persist_verified_memory(memory, state)
             root_observation.update(
-                output={"status": state.status.value, "summary": _final_summary(state)},
+                output={"status": state.status.value, "summary": final_summary(state)},
                 metadata={
                     "llm_calls": backend.llm_calls,
                     "web_searches": web.searches,
@@ -282,7 +272,7 @@ def run_real_demo(
     if state is None or gateway is None or backend is None:
         raise RealDemoError("The real demo stopped before creating task state.")
     after = snapshot(before.workspace)
-    artifact = _real_artifact(
+    artifact = build_real_artifact(
         run_id=run_id,
         state=state,
         before_checksum=before.checksum,
@@ -299,205 +289,6 @@ def run_real_demo(
         artifact_directory=directory,
         workspace=before.workspace,
     )
-def _real_artifact(
-    *,
-    run_id: str,
-    state: TaskState,
-    before_checksum: str,
-    after_checksum: str,
-    trace_id: str | None,
-    gateway: AuthorizedToolGateway,
-    backend: OpenAIAgentBackend,
-) -> RunArtifact:
-    command_invocations = [
-        item for item in state.tool_invocations if item.tool_name == "run_command"
-    ]
-    commands = tuple(
-        ArtifactCommand(
-            argv=argv,
-            exit_code=(
-                command_invocations[index].exit_code
-                if index < len(command_invocations)
-                else None
-            ),
-            status=(
-                command_invocations[index].status.value
-                if index < len(command_invocations)
-                else "recorded"
-            ),
-            output_digest=(
-                command_invocations[index].output_digest
-                if index < len(command_invocations)
-                else None
-            ),
-        )
-        for index, argv in enumerate(state.commands)
-    )
-    sources = tuple(
-        ArtifactSource(
-            source=item.source,
-            reference=item.reference,
-            locator=item.locator,
-            excerpt=item.content[:500],
-        )
-        for item in state.evidence
-    )
-    events = [
-        ArtifactEvent(
-            event_type=event.event_type,
-            outcome=event.to_status.value,
-            detail=f"{event.from_status.value} -> {event.to_status.value}",
-        )
-        for event in state.events
-    ]
-    events.extend(
-        ArtifactEvent(
-            event_type="policy",
-            outcome=decision.outcome.value,
-            detail=f"{decision.rule}: {decision.reason}",
-        )
-        for decision in gateway.decisions
-    )
-    events.extend(
-        ArtifactEvent(
-            event_type="loop.no_progress",
-            outcome=signal.strategy.value,
-            detail=signal.explanation,
-        )
-        for signal in backend.no_progress_signals
-    )
-    return RunArtifact(
-        run_id=run_id,
-        scenario="real_rag",
-        task_id=state.request.task_id,
-        project_id=state.request.project_id,
-        session_id=state.request.session_id,
-        status=state.status,
-        provider_mode="real",
-        observability="langfuse",
-        trace_id=trace_id,
-        fixture_before=before_checksum,
-        fixture_after=after_checksum,
-        sources=sources,
-        files_modified=tuple(str(item.path) for item in state.files_modified),
-        commands=commands,
-        memory_retrieved=tuple(
-            item.content for item in state.evidence if item.source is EvidenceSource.MEMORY
-        ),
-        control_events=tuple(events),
-        diff="".join(item.diff or "" for item in state.files_modified),
-        final_summary=_final_summary(state),
-        pending_commands=(),
-    )
-
-
-def _persist_verified_memory(repository: MemoryRepository, state: TaskState) -> None:
-    now = datetime.now(UTC)
-    stale_after = now + timedelta(days=30)
-    records: list[MemoryRecord] = []
-    for path in state.files_read:
-        content = f"Verified relevant project file: {path.as_posix()}."
-        records.append(
-            _memory_record(
-                state,
-                category=MemoryCategory.IMPORTANT_FILE,
-                kind=MemoryKind.OBSERVATION,
-                content=content,
-                source_type=MemorySourceType.REPOSITORY,
-                source_reference=path.as_posix(),
-                now=now,
-                stale_after=stale_after,
-            )
-        )
-    for result in state.agent_results:
-        for check in result.checks:
-            content = (
-                f"Check {'passed' if check.passed else 'failed'}: "
-                f"{' '.join(check.command) or check.name}."
-            )
-            records.append(
-                _memory_record(
-                    state,
-                    category=MemoryCategory.CHECK_RESULT,
-                    kind=MemoryKind.OBSERVATION,
-                    content=content,
-                    source_type=MemorySourceType.TOOL_OUTPUT,
-                    source_reference=check.output_digest or check.name,
-                    now=now,
-                    stale_after=stale_after,
-                )
-            )
-    for decision in state.decisions:
-        records.append(
-            _memory_record(
-                state,
-                category=MemoryCategory.DECISION,
-                kind=MemoryKind.DECISION,
-                content=decision.reason,
-                source_type=MemorySourceType.TOOL_OUTPUT,
-                source_reference=decision.decision_id,
-                now=now,
-                stale_after=stale_after,
-                metadata={"evidence_ids": list(decision.evidence_ids)},
-            )
-        )
-    records.append(
-        _memory_record(
-            state,
-            category=MemoryCategory.SESSION_SUMMARY,
-            kind=MemoryKind.SESSION_SUMMARY,
-            content=_final_summary(state),
-            source_type=MemorySourceType.TOOL_OUTPUT,
-            source_reference=state.request.task_id,
-            now=now,
-            stale_after=stale_after,
-        )
-    )
-    for record in records:
-        repository.save(record)
-
-
-def _memory_record(
-    state: TaskState,
-    *,
-    category: MemoryCategory,
-    kind: MemoryKind,
-    content: str,
-    source_type: MemorySourceType,
-    source_reference: str,
-    now: datetime,
-    stale_after: datetime,
-    metadata: dict[str, object] | None = None,
-) -> MemoryRecord:
-    identifier = hashlib.sha256(
-        f"{state.request.project_id}:{category.value}:{source_reference}:{content}".encode()
-    ).hexdigest()
-    return MemoryRecord(
-        id=identifier,
-        project_id=state.request.project_id,
-        category=category,
-        kind=kind,
-        content=content,
-        source_type=source_type,
-        source_reference=source_reference,
-        confidence=1.0,
-        session_id=state.request.session_id,
-        created_at=now,
-        updated_at=now,
-        last_verified_at=now,
-        stale_after=stale_after,
-        metadata=metadata or {"verified": True},
-    )
-
-
-def _final_summary(state: TaskState) -> str:
-    if state.final_result is not None:
-        return state.final_result.summary
-    if state.errors:
-        return f"Task ended in {state.status.value}: {state.errors[-1].message}"
-    return f"Task ended in {state.status.value}."
-
-
 def _configured_path(value: Path, config_path: Path) -> Path:
     return value if value.is_absolute() else config_path.resolve().parent / value
 

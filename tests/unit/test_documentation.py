@@ -15,22 +15,24 @@ REQUIRED_DOCUMENTS = (
     ROOT / "README.md",
     ROOT / "docs/case_use.md",
     ROOT / "docs/architecture.md",
-    ROOT / "docs/state_and_memory.md",
     ROOT / "docs/rag.md",
-    ROOT / "docs/security_policies.md",
-    ROOT / "docs/context_and_loop_detection.md",
-    ROOT / "docs/observability.md",
     ROOT / "docs/testing.md",
-    ROOT / "docs/demo_runbook.md",
     ROOT / "docs/reflection.md",
-    ROOT / "docs/delivery_checklist.md",
     ROOT / "docs/requirements_matrix.md",
+    ROOT / "docs/evidence/README.md",
+    ROOT / "docs/evidence/screenshots/README.md",
 )
 RUN_IDS = (
     "scenario-a-rag",
     "scenario-b-session-1",
     "scenario-b-session-2",
     "scenario-c-safety",
+    "real-openai-20260717-003912",
+)
+TRACE_ID = "cd6e9589a8074d1d52c738d79373c128"
+REQUIRED_SCREENSHOTS = (
+    ROOT / f"docs/evidence/screenshots/{TRACE_ID}-full-trace.png",
+    ROOT / f"docs/evidence/screenshots/{TRACE_ID}-metadata.png",
 )
 ARTIFACT_FILES = frozenset(
     {
@@ -49,6 +51,7 @@ MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 
 def test_required_documents_and_artifact_bundles_exist() -> None:
     assert all(path.is_file() for path in REQUIRED_DOCUMENTS)
+    assert all(path.is_file() and path.stat().st_size > 0 for path in REQUIRED_SCREENSHOTS)
     for run_id in RUN_IDS:
         run_directory = ROOT / "docs/evidence/runs" / run_id
         assert run_directory.is_dir()
@@ -73,14 +76,16 @@ def test_local_markdown_links_resolve() -> None:
     assert broken == []
 
 
-def test_requirements_matrix_has_one_seven_column_row_per_requirement() -> None:
+def test_requirements_matrix_covers_mandatory_and_delivery_requirements() -> None:
     matrix = (ROOT / "docs/requirements_matrix.md").read_text(encoding="utf-8")
-    rows = [line for line in matrix.splitlines() if re.match(r"^\| R\d{2}\.", line)]
-    identifiers = [re.match(r"^\| (R\d{2})\.", row) for row in rows]
-    assert [match.group(1) for match in identifiers if match is not None] == [
-        f"R{number:02d}" for number in range(1, 45)
+    rows = [line for line in matrix.splitlines() if re.match(r"^\| [RD]\d{2} ", line)]
+    identifiers = [row.split("|")[1].strip() for row in rows]
+    assert identifiers == [
+        *(f"R{number:02d}" for number in range(1, 20)),
+        *(f"D{number:02d}" for number in range(1, 9)),
     ]
-    assert all(len(row.split("|")) - 2 == 7 for row in rows)
+    assert all(len(row.split("|")) - 2 == 4 for row in rows)
+    assert all(row.rstrip().endswith("PASS |") for row in rows)
 
 
 @pytest.mark.parametrize(
@@ -95,10 +100,6 @@ def test_requirements_matrix_has_one_seven_column_row_per_requirement() -> None:
         ("rag", "query", "--help"),
         ("demo", "--help"),
         ("demo", "reset", "--help"),
-        ("demo", "rag", "--help"),
-        ("demo", "memory", "--help"),
-        ("demo", "safety", "--help"),
-        ("demo", "all", "--help"),
         ("demo", "real", "--help"),
     ],
 )

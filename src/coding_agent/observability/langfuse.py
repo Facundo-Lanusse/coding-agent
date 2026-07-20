@@ -180,7 +180,7 @@ class LangfuseObservation:
             payload.update(
                 {
                     "level": "ERROR",
-                    "status_message": self._sanitizer.content(error),
+                    "status_message": str(self._sanitizer.content(error)),
                 }
             )
         try:

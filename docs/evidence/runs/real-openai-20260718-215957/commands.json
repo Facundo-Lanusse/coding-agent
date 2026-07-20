@@ -1,0 +1,11 @@
+[
+  {
+    "argv": [
+      "pytest",
+      "-q"
+    ],
+    "exit_code": 0,
+    "output_digest": "e76c165ddbed1b4c516b41214974ac900aff0df1745d53d3ef707ffda9ac2052",
+    "status": "executed"
+  }
+]

@@ -7,6 +7,7 @@ import os
 import re
 import sys
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
@@ -66,6 +67,16 @@ class RunArtifact(FrozenModel):
     diff: str = ""
     final_summary: str = Field(min_length=1)
     pending_commands: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class DemoRun:
+    """Result of one contained real-provider demonstration."""
+
+    artifact: RunArtifact
+    state: TaskState
+    artifact_directory: Path
+    workspace: Path
 
 
 class ArtifactWriter:

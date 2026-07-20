@@ -8,23 +8,39 @@ from pydantic import SecretStr
 
 from coding_agent.agents import LLMCallBudget, OpenAIAgentBackend
 from coding_agent.approval import DenyAllApprovalProvider
-from coding_agent.demo.scenarios import DemoScenarioRunner
+from coding_agent.demo.real_artifacts import (
+    build_real_artifact,
+    final_summary,
+    persist_verified_memory,
+)
 from coding_agent.llm import LLMClient
 from coding_agent.memory import MemoryQuery, SQLiteMemoryRepository
-from coding_agent.models import LLMRequest
+from coding_agent.models import LLMRequest, ToolStatus
 from coding_agent.observability import NoOpTracer
 from coding_agent.policies import AuthorizedToolGateway
 from coding_agent.runtime import (
     ProjectMemoryEvidenceProvider,
     RealDemoError,
     _configured_path,
-    _final_summary,
-    _persist_verified_memory,
-    _real_artifact,
     _secret,
     run_real_demo,
 )
-from coding_agent.state import EvidenceSource
+from coding_agent.state import (
+    AgentName,
+    AgentResult,
+    AgentResultStatus,
+    CheckResult,
+    Evidence,
+    EvidenceGroup,
+    EvidenceSource,
+    FileChange,
+    FileOperation,
+    TaskFinalResult,
+    TaskRequest,
+    TaskState,
+    TaskStatus,
+    ToolInvocationRecord,
+)
 from coding_agent.tools import build_default_registry
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -122,12 +138,66 @@ def test_real_runtime_stops_before_providers_if_langfuse_is_unavailable(
 
 
 def test_runtime_builds_artifact_and_persists_only_classified_memory(tmp_path: Path) -> None:
-    run = DemoScenarioRunner(
-        seed_root=ROOT / "examples/fastapi_demo/seed",
-        runtime_root=tmp_path / "runtime",
-        rag_sources=ROOT / "rag_sources",
-        output_root=tmp_path / "baseline-evidence",
-    ).run_rag()
+    request = TaskRequest(
+        task_id="real-openai-unit",
+        project_id="fastapi-demo",
+        session_id="session",
+        original_request="Add a verified FastAPI endpoint.",
+        workspace=tmp_path,
+    )
+    check = CheckResult(
+        name="pytest",
+        passed=True,
+        command=("pytest", "-q"),
+        exit_code=0,
+        output_digest="check-output",
+    )
+    state = TaskState(
+        request=request,
+        status=TaskStatus.COMPLETED,
+        evidence=(
+            Evidence(
+                evidence_id="rag-fastapi",
+                source=EvidenceSource.RAG,
+                reference="rag_sources/fastapi_dependencies.md",
+                content="Verified FastAPI evidence.",
+            ),
+        ),
+        files_read=(Path("app/main.py"),),
+        files_modified=(
+            FileChange(
+                path=Path("app/routers/health.py"),
+                operation=FileOperation.MODIFIED,
+                actor=AgentName.IMPLEMENTER,
+                diff="--- a/app/routers/health.py\n+++ b/app/routers/health.py\n",
+                authorized=True,
+            ),
+        ),
+        commands=(("pytest", "-q"),),
+        tool_invocations=(
+            ToolInvocationRecord(
+                call_id="test-call",
+                tool_name="run_command",
+                actor=AgentName.TESTER,
+                status=ToolStatus.EXECUTED,
+                exit_code=0,
+                output_digest="check-output",
+            ),
+        ),
+        agent_results=(
+            AgentResult(
+                agent=AgentName.TESTER,
+                status=AgentResultStatus.SUCCEEDED,
+                summary="Focused tests passed.",
+                checks=(check,),
+            ),
+        ),
+        final_result=TaskFinalResult(
+            summary="Verified endpoint delivered.",
+            evidence=(EvidenceGroup(source=EvidenceSource.RAG, items=()),),
+            reviewer_accepted=True,
+        ),
+    )
     gateway = AuthorizedToolGateway(
         build_default_registry(),
         config_path=ROOT / "agent.config.yaml",
@@ -135,11 +205,11 @@ def test_runtime_builds_artifact_and_persists_only_classified_memory(tmp_path: P
     )
     backend = OpenAIAgentBackend(NeverLLM(), call_budget=LLMCallBudget(5))
 
-    artifact = _real_artifact(
+    artifact = build_real_artifact(
         run_id="real-openai-unit",
-        state=run.state,
-        before_checksum=run.artifact.fixture_before,
-        after_checksum=run.artifact.fixture_after,
+        state=state,
+        before_checksum="a" * 64,
+        after_checksum="b" * 64,
         trace_id="trace-unit",
         gateway=gateway,
         backend=backend,
@@ -153,22 +223,46 @@ def test_runtime_builds_artifact_and_persists_only_classified_memory(tmp_path: P
 
     repository = SQLiteMemoryRepository(tmp_path / "memory.sqlite3")
     try:
-        _persist_verified_memory(repository, run.state)
+        persist_verified_memory(repository, state)
         matches = repository.search(
-            MemoryQuery(project_id=run.state.request.project_id, text="check", limit=50)
+            MemoryQuery(project_id=state.request.project_id, text="check", limit=50)
         )
-        recovered = ProjectMemoryEvidenceProvider(repository).load(run.state.request)
+        recovered = ProjectMemoryEvidenceProvider(repository).load(state.request)
     finally:
         repository.close()
 
     assert matches
     assert recovered
     assert all(item.source is EvidenceSource.MEMORY for item in recovered)
-    assert run.state.final_result is not None
-    assert _final_summary(run.state) == run.state.final_result.summary
+    assert state.final_result is not None
+    assert final_summary(state) == state.final_result.summary
     assert _configured_path(Path("data/test.sqlite3"), ROOT / "agent.config.yaml") == (
         ROOT / "data/test.sqlite3"
     )
     assert _secret(SecretStr("hidden")) == "hidden"
     with pytest.raises(RealDemoError, match="unavailable"):
         _secret(object())
+
+
+def test_failed_runs_are_not_persisted_as_verified_memory(tmp_path: Path) -> None:
+    state = TaskState(
+        request=TaskRequest(
+            task_id="failed-run",
+            project_id="fastapi-demo",
+            session_id="failed-session",
+            original_request="Inspect the repository.",
+            workspace=tmp_path,
+        ),
+        status=TaskStatus.STOPPED_NO_EVIDENCE,
+        files_read=(Path("app/main.py"),),
+    )
+    repository = SQLiteMemoryRepository(tmp_path / "memory.sqlite3")
+    try:
+        persist_verified_memory(repository, state)
+        matches = repository.search(
+            MemoryQuery(project_id=state.request.project_id, text="repository", limit=10)
+        )
+    finally:
+        repository.close()
+
+    assert matches == ()

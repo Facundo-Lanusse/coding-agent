@@ -102,5 +102,5 @@ observability:
   provider: langfuse
   enabled: true
   redact_sensitive_data: true
-  capture_content: false
+  capture_content: true
   max_payload_chars: 20000

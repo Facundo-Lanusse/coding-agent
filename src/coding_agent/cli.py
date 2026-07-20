@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Annotated, NoReturn
+from uuid import uuid4
 
 import typer
 
@@ -16,7 +17,7 @@ from coding_agent.config import (
     load_config,
     resolve_workspace,
 )
-from coding_agent.demo import DemoScenarioRunner, FixtureResetter
+from coding_agent.demo import FixtureResetter
 from coding_agent.harness import CodingAgentHarness
 from coding_agent.llm.openai_client import OpenAIResponsesClient
 from coding_agent.models import (
@@ -25,6 +26,7 @@ from coding_agent.models import (
     ApprovalRequest,
     RunStatus,
 )
+from coding_agent.observability import ObservationKind, TracedLLMClient, create_tracer
 from coding_agent.policies import AuthorizedToolGateway
 from coding_agent.rag import (
     CollectionSpec,
@@ -50,7 +52,7 @@ app = typer.Typer(
 )
 config_app = typer.Typer(help="Inspect and validate agent configuration.", no_args_is_help=True)
 rag_app = typer.Typer(help="Ingest and query the persistent technical RAG.", no_args_is_help=True)
-demo_app = typer.Typer(help="Run reproducible FastAPI demo scenarios.", no_args_is_help=True)
+demo_app = typer.Typer(help="Run the bounded FastAPI delivery scenario.", no_args_is_help=True)
 app.add_typer(config_app, name="config")
 app.add_typer(rag_app, name="rag")
 app.add_typer(demo_app, name="demo")
@@ -113,33 +115,69 @@ def run_agent(
         typer.echo("OPENAI_API_KEY is required to use the real OpenAI adapter.", err=True)
         raise typer.Exit(code=2)
 
-    llm = OpenAIResponsesClient(
+    tracer = create_tracer(
+        loaded.observability,
+        trace_seed=f"harness-{uuid4().hex}",
+    )
+    raw_llm = OpenAIResponsesClient(
         model=loaded.llm.model,
         max_output_tokens=loaded.llm.max_output_tokens,
         store_responses=loaded.llm.store_responses,
         api_key=settings.openai_api_key.get_secret_value(),
     )
+    llm = TracedLLMClient(raw_llm, tracer, configured_model=loaded.llm.model)
     approval_provider = TyperApprovalProvider()
     registry = build_default_registry()
     gateway = AuthorizedToolGateway(
         registry,
         config_path=config,
         approval_provider=approval_provider,
+        tracer=tracer,
     )
     harness = CodingAgentHarness(
         llm,
         tools=gateway.bindings(ToolRole.IMPLEMENTER),
         approval_provider=approval_provider,
     )
-    result = harness.run(
-        AgentRunRequest(
-            task=task,
-            plan_mode=plan,
-            supervision_mode=supervision,
-            max_iterations=loaded.execution.max_agent_iterations,
-        )
-    )
+    try:
+        with tracer.observe(
+            "coding-agent.run",
+            kind=ObservationKind.TASK,
+            input={"task": task},
+            metadata={
+                "model": loaded.llm.model,
+                "plan_mode": plan,
+                "supervision_mode": supervision,
+                "max_iterations": loaded.execution.max_agent_iterations,
+            },
+        ) as root_observation:
+            result = harness.run(
+                AgentRunRequest(
+                    task=task,
+                    plan_mode=plan,
+                    supervision_mode=supervision,
+                    max_iterations=loaded.execution.max_agent_iterations,
+                )
+            )
+            root_observation.update(
+                output={
+                    "status": result.status.value,
+                    "final_answer": result.final_answer,
+                },
+                metadata={"metrics": result.metrics.model_dump(mode="json")},
+            )
+    finally:
+        tracer.flush()
+
     typer.echo(result.model_dump_json(indent=2))
+    if tracer.trace_id is not None:
+        typer.echo(f"Langfuse trace id: {tracer.trace_id}", err=True)
+    elif loaded.observability.enabled:
+        typer.echo(
+            "Langfuse tracing inactive; verify LANGFUSE_PUBLIC_KEY and "
+            "LANGFUSE_SECRET_KEY in this shell.",
+            err=True,
+        )
     if result.status is not RunStatus.COMPLETED:
         raise typer.Exit(code=2)
 
@@ -217,73 +255,6 @@ def demo_reset(
 
     snapshot = FixtureResetter(_demo_seed(), runtime_root).reset(name)
     typer.echo(snapshot.checksum)
-
-
-@demo_app.command("rag")
-def demo_rag(
-    runtime_root: Annotated[Path, typer.Option("--runtime-root")] = Path("tmp/demo-runtime"),
-    output_root: Annotated[Path, typer.Option("--output-root")] = Path(
-        "docs/evidence/runs"
-    ),
-) -> None:
-    """Run scenario A with deterministic embeddings and providers."""
-
-    run = _demo_runner(runtime_root, output_root).run_rag()
-    typer.echo(run.artifact.model_dump_json(indent=2))
-
-
-@demo_app.command("memory")
-def demo_memory(
-    runtime_root: Annotated[Path, typer.Option("--runtime-root")] = Path("tmp/demo-runtime"),
-    output_root: Annotated[Path, typer.Option("--output-root")] = Path(
-        "docs/evidence/runs"
-    ),
-) -> None:
-    """Run two independent memory sessions against one SQLite database."""
-
-    database = runtime_root / "scenario-b-memory.sqlite3"
-    first = _demo_runner(runtime_root, output_root).run_memory_session_1(database)
-    second = _demo_runner(runtime_root, output_root).run_memory_session_2(database)
-    typer.echo(first.artifact.model_dump_json(indent=2))
-    typer.echo(second.artifact.model_dump_json(indent=2))
-
-
-@demo_app.command("safety")
-def demo_safety(
-    runtime_root: Annotated[Path, typer.Option("--runtime-root")] = Path("tmp/demo-runtime"),
-    output_root: Annotated[Path, typer.Option("--output-root")] = Path(
-        "docs/evidence/runs"
-    ),
-) -> None:
-    """Run the denied-write, approval and repeated-failure scenario."""
-
-    run = _demo_runner(runtime_root, output_root).run_safety()
-    typer.echo(run.artifact.model_dump_json(indent=2))
-
-
-@demo_app.command("all")
-def demo_all(
-    runtime_root: Annotated[Path, typer.Option("--runtime-root")] = Path("tmp/demo-runtime"),
-    output_root: Annotated[Path, typer.Option("--output-root")] = Path(
-        "docs/evidence/runs"
-    ),
-) -> None:
-    """Run all deterministic scenarios and write four artifact directories."""
-
-    runner = _demo_runner(runtime_root, output_root)
-    database = runtime_root / "scenario-b-memory.sqlite3"
-    runs = (
-        runner.run_rag(),
-        runner.run_memory_session_1(database),
-        DemoScenarioRunner(
-            seed_root=_demo_seed(),
-            runtime_root=runtime_root,
-            rag_sources=Path("rag_sources"),
-            output_root=output_root,
-        ).run_memory_session_2(database),
-        runner.run_safety(),
-    )
-    typer.echo(json.dumps([run.artifact.run_id for run in runs]))
 
 
 @demo_app.command("real")
@@ -390,15 +361,6 @@ def _rag_runtime(
 
 def _demo_seed() -> Path:
     return Path("examples/fastapi_demo/seed")
-
-
-def _demo_runner(runtime_root: Path, output_root: Path) -> DemoScenarioRunner:
-    return DemoScenarioRunner(
-        seed_root=_demo_seed(),
-        runtime_root=runtime_root,
-        rag_sources=Path("rag_sources"),
-        output_root=output_root,
-    )
 
 
 def _configuration_failure(error: ConfigurationError) -> NoReturn:

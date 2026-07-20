@@ -48,10 +48,10 @@ ejecutó el test HTTP FastAPI porque las dependencias de la fixture no están
 instaladas en el entorno principal.
 
 La ejecución real equivalente está en
-[`evidence/runs/real-openai-20260716-231650`](evidence/runs/real-openai-20260716-231650).
+[`evidence/runs/real-openai-20260717-003912`](evidence/runs/real-openai-20260717-003912).
 Usó OpenAI, embeddings reales, Tavily como fallback y Langfuse; completó los
 cinco roles, ejecutó los tres tests HTTP con exit 0 y Reviewer aceptó. Su trace
-id es `8248244a2224f1dc099fff1240e5c040`.
+id es `cd6e9589a8074d1d52c738d79373c128`.
 
 ## Escenario B: memoria entre sesiones y `GET /version`
 
@@ -85,4 +85,4 @@ y artifacts sanitizados. Todos declaran honestamente
 `provider_mode=deterministic_fake`, `observability=recording` y `trace_id=null`.
 La composición productiva equivalente se ejecutó mediante
 `coding-agent demo real`; su bundle OpenAI/Langfuse completo se referencia en
-el escenario A. Las capturas de la UI siguen siendo evidencia humana pendiente.
+el escenario A y las capturas de la UI están en `evidence/screenshots/`.
